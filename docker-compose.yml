@@ -1,0 +1,39 @@
+
+version: '2.2'
+
+services:
+
+  hiker_client:
+    #build:
+    #  context: test_client
+    user: nobody:nogroup
+    image: cyberdojo/hiker-client
+    init: true
+    container_name: test-hiker-client
+    read_only: true
+    tmpfs: /tmp
+    restart: 'no'
+    #depends_on:
+    #  - mapper
+    #ports:
+    #  - 4548:4548
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  hiker:
+    build:
+      context: .
+      args:
+        - SHA
+    user: nobody
+    image: cyberdojo/hiker
+    init: true
+    container_name: test-hiker-server
+    read_only: true
+    #ports:
+    #  - 4547:4547
+    tmpfs: /tmp
+    restart: 'no'
+    #volumes:
+    #  - ./test_server:/app/test:ro
+    #  - ./test_server/data/porter:/porter:ro
