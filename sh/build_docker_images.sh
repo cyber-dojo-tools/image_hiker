@@ -5,6 +5,10 @@ readonly ROOT_DIR="$( cd "$( dirname "${0}" )" && cd .. && pwd )"
 
 export SHA=$(cd "${ROOT_DIR}" && git rev-parse HEAD)
 
+export CYBER_DOJO_LANGUAGES=cyberdojo/languages-small:latest
+
 docker-compose \
   --file "${ROOT_DIR}/docker-compose.yml" \
-  build
+  up \
+  --build \
+  hiker
