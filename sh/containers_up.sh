@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -e
 
 readonly ROOT_DIR="$( cd "$( dirname "${0}" )" && cd .. && pwd )"
 
@@ -9,7 +9,7 @@ curl_cmd()
 {
   local port="${1}"
   local path="${2}"
-  local cmd="curl --silent --fail --data '{}' -X GET http://localhost:${port}/${path}"
+  local cmd="curl --silent --fail --data {} -X GET http://localhost:${port}/${path}"
   if [ -n "${DOCKER_MACHINE_NAME}" ]; then
     cmd="docker-machine ssh ${DOCKER_MACHINE_NAME} ${cmd}"
   fi
@@ -66,15 +66,6 @@ docker-compose \
   up \
   -d \
   hiker
-
-sleep 2
-docker ps -a
-docker logs test-hiker-runner
-docker logs test-hiker-ragger
-docker logs test-hiker-languages
-docker logs test-hiker-server
-
-echo '---------'
 
 wait_until_ready  test-hiker-runner 4597
 exit_unless_clean test-hiker-runner
