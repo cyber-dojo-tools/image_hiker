@@ -1,0 +1,23 @@
+
+There are two arguments to image_hiker
+o) the name of the start-point image
+   Create the start-point image outside and
+   pass in as an argument to image_hiker.
+o) the name of the LTF image passed to the runner
+   This is inside the start-points manifest.json file.
+   Create this outside and pass in as an argument to image_hiker.
+
+So image_hiker will be a docker-image that
+o) has docker-compose inside it
+o) is passed the names of
+   1) the start-point image
+   2) the LTF image (this will be inside the start-point too)
+o) it will start a languages service from 1)
+o) it will start a runner service
+o) it will start a ragger service
+o) it will...
+   - get the starting-files from the language service
+   - pass them to runner and get back stdout/stderr/status
+   - pass sss to ragger and confirm red
+   - s/6 * 9/6 * sdf/ and repeat, confirm an amber
+   - s/6 * 9/6 * 7/ and repeat, confirm a green

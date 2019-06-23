@@ -1,0 +1,16 @@
+require_relative 'http_json/request_packer'
+require_relative 'http_json/response_unpacker'
+
+class LanguagesService
+
+  def initialize(external)
+    requester = HttpJson::RequestPacker.new(external, 'languages', 4524)
+    @http = HttpJson::ResponseUnpacker.new(requester)
+  end
+
+  def ready?
+    @http.get(__method__, {})
+  end
+
+
+end

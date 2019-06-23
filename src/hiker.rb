@@ -10,11 +10,15 @@ class Hiker
   end
 
   def ready?
-    ragger.ready? && runner.ready?
+    languages.ready? && ragger.ready? && runner.ready?
   end
 
 
   private
+
+  def languages
+    @external.languages
+  end
 
   def ragger
     @external.ragger
