@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -x
 
 readonly ROOT_DIR="$( cd "$( dirname "${0}" )" && cd .. && pwd )"
 
@@ -66,6 +66,15 @@ docker-compose \
   up \
   -d \
   hiker
+
+sleep 2
+docker ps -a
+docker logs test-hiker-runner
+docker logs test-hiker-ragger
+docker logs test-hiker-languages
+docker logs test-hiker-server
+
+echo '---------'
 
 wait_until_ready  test-hiker-runner 4597
 exit_unless_clean test-hiker-runner
