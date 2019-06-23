@@ -1,5 +1,3 @@
-require_relative 'base58'
-require_relative 'docker/image_name'
 require_relative 'http_json/request_error'
 require 'json'
 
@@ -28,66 +26,6 @@ class HttpJsonArgs
     else
       raise HttpJson::RequestError, 'unknown path'
     end
-  end
-
-  private
-
-  def image_name
-    arg = @args[name = __method__.to_s]
-    unless Docker::image_name?(arg)
-      fail malformed(name)
-    end
-    arg
-  end
-
-  # - - - - - - - - - - - - - - - -
-
-  def id
-    arg = @args[name = __method__.to_s]
-    unless well_formed_id?(arg)
-      fail malformed(name)
-    end
-    arg
-  end
-
-  def well_formed_id?(arg)
-    Base58.string?(arg) && arg.size === 6
-  end
-
-  # - - - - - - - - - - - - - - - -
-
-  def stdout
-    arg = @args[name = __method__.to_s]
-    unless arg.is_a?(String)
-      fail malformed(name)
-    end
-    arg
-  end
-
-  # - - - - - - - - - - - - - - - -
-
-  def stderr
-    arg = @args[name = __method__.to_s]
-    unless arg.is_a?(String)
-      fail malformed(name)
-    end
-    arg
-  end
-
-  # - - - - - - - - - - - - - - - -
-
-  def status
-    arg = @args[name = __method__.to_s]
-    unless arg.is_a?(Integer)
-      fail malformed(name)
-    end
-    arg
-  end
-
-  # - - - - - - - - - - - - - - - -
-
-  def malformed(arg_name)
-    HttpJson::RequestError.new("#{arg_name} is malformed")
   end
 
 end

@@ -67,6 +67,8 @@ docker-compose \
   -d \
   hiker
 
+sleep 1
+
 wait_until_ready  test-hiker-runner 4597
 exit_unless_clean test-hiker-runner
 
@@ -79,4 +81,9 @@ exit_unless_clean test-hiker-languages
 wait_until_ready  test-hiker-server 5637
 exit_unless_clean test-hiker-server
 
+docker ps -a
+
+$(curl_cmd 4524 names)
+echo
 $(curl_cmd 5637 hike)
+echo
