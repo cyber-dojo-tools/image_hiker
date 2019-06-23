@@ -22,7 +22,7 @@ wait_until_ready()
 {
   local name="${1}"
   local port="${2}"
-  local max_tries=10
+  local max_tries=20
   echo -n "Waiting until ${name} is ready"
   for _ in $(seq ${max_tries})
   do
@@ -31,7 +31,7 @@ wait_until_ready()
       echo 'OK'
       return
     else
-      sleep 0.1
+      sleep 0.2
     fi
   done
   echo 'FAIL'
@@ -67,14 +67,14 @@ docker-compose \
   -d \
   hiker
 
-wait_until_ready  test-hiker-languages 4524
-exit_unless_clean test-hiker-languages
-
 wait_until_ready  test-hiker-runner 4597
 exit_unless_clean test-hiker-runner
 
 wait_until_ready  test-hiker-ragger 5537
 exit_unless_clean test-hiker-ragger
+
+wait_until_ready  test-hiker-languages 4524
+exit_unless_clean test-hiker-languages
 
 wait_until_ready  test-hiker-server 5637
 exit_unless_clean test-hiker-server
