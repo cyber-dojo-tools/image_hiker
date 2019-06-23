@@ -13,6 +13,9 @@ class Hiker
     languages.ready? && ragger.ready? && runner.ready?
   end
 
+  def hike
+    puts languages.names
+  end
 
   private
 

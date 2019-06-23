@@ -12,5 +12,12 @@ class LanguagesService
     @http.get(__method__, {})
   end
 
+  def names
+    @http.get(__method__, {})
+  end
+
+  def manifest(name)
+    @http.get(__method__, { name:name })
+  end
 
 end

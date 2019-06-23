@@ -61,8 +61,6 @@ exit_unless_clean()
 
 # - - - - - - - - - - - - - - - - - - - - - -
 
-export CYBER_DOJO_LANGUAGES=cyberdojo/languages-small:latest
-
 docker-compose \
   --file "${ROOT_DIR}/docker-compose.yml" \
   up \
@@ -80,3 +78,5 @@ exit_unless_clean test-hiker-ragger
 
 wait_until_ready  test-hiker-server 5637
 exit_unless_clean test-hiker-server
+
+$(curl_cmd 5637 hike)

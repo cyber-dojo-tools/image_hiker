@@ -9,7 +9,7 @@ class External
   def initialize(options = {})
     @http = options['http'] || Net::HTTP
     @log  = options['log' ] || StdoutLog.new
-    @languages = LanguageService.new(self)
+    @languages = LanguagesService.new(self)
     @ragger = RaggerService.new(self)
     @runner = RunnerService.new(self)
   end
