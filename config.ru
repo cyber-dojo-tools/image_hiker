@@ -1,3 +1,6 @@
+$stdout.sync = true
+$stderr.sync = true
+
 require 'rack'
 require_relative './src/external'
 require_relative './src/hiker'

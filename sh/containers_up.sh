@@ -1,33 +1,29 @@
 #!/bin/bash
 set -e
 
-readonly ROOT_DIR="$( cd "$( dirname "${0}" )" && cd .. && pwd )"
-
-# - - - - - - - - - - - - - - - - - - - - - -
-
-curl_cmd()
+ip_address()
 {
-  local port="${1}"
-  local path="${2}"
-  local cmd="curl --silent --fail --data {} -X GET http://localhost:${port}/${path}"
   if [ -n "${DOCKER_MACHINE_NAME}" ]; then
-    cmd="docker-machine ssh ${DOCKER_MACHINE_NAME} ${cmd}"
+    docker-machine ip ${DOCKER_MACHINE_NAME}
+  else
+    echo localhost
   fi
-  echo "${cmd}"
 }
+
+readonly IP_ADDRESS=$(ip_address)
 
 # - - - - - - - - - - - - - - - - - - - - - -
 
 wait_until_ready()
 {
-  local name="${1}"
-  local port="${2}"
-  local max_tries=20
+  local -r name="${1}"
+  local -r port="${2}"
+  local -r max_tries=20
   echo -n "Waiting until ${name} is ready"
   for _ in $(seq ${max_tries})
   do
     echo -n '.'
-    if $(curl_cmd ${port} ready?) > /dev/null 2>&1 ; then
+    if $(curl_cmd ${port} ready?) ; then
       echo 'OK'
       return
     else
@@ -42,35 +38,49 @@ wait_until_ready()
 
 # - - - - - - - - - - - - - - - - - - - - - -
 
+curl_cmd()
+{
+  local -r port="${1}"
+  local -r path="${2}"
+  local -r cmd="curl --output /dev/null --silent --fail --data {} -X GET http://${IP_ADDRESS}:${port}/${path}"
+  echo "${cmd}"
+}
+
+# - - - - - - - - - - - - - - - - - - - - - -
+
 exit_unless_clean()
 {
   local -r name="${1}"
   local -r docker_log=$(docker logs "${name}")
   local -r line_count=$(echo -n "${docker_log}" | grep -c '^')
-  echo "Checking ${name} started cleanly..."
-  if [ "${line_count}" != '3' ]; then
+  echo -n "Checking ${name} started cleanly..."
+  if [ "${line_count}" == '3' ]; then
     # Thin web server (v1.7.2 codename Bachmanity)
     # Maximum connections set to 1024
     # Listening on 0.0.0.0:4597, CTRL+C to stop
-    show_unclean_docker_log "${name}" "${docker_log}"
+    echo 'OK'
+  else
+    echo 'FAIL'
+    echo_docker_log "${name}" "${docker_log}"
+    exit 1
   fi
 }
 
 # - - - - - - - - - - - - - - - - - - - - - -
 
-show_unclean_docker_log()
+echo_docker_log()
 {
   local -r name="${1}"
   local -r docker_log="${2}"
-  echo 'FAIL'
-  echo "[docker logs ${name}] not empty on startup"
+  echo "[docker logs ${name}]"
   echo "<docker_log>"
   echo "${docker_log}"
   echo "</docker_log>"
-  exit 1
 }
 
 # - - - - - - - - - - - - - - - - - - - - - -
+
+readonly ROOT_DIR="$( cd "$( dirname "${0}" )" && cd .. && pwd )"
 
 docker-compose \
   --file "${ROOT_DIR}/docker-compose.yml" \
@@ -87,11 +97,10 @@ exit_unless_clean test-hiker-ragger
 wait_until_ready  test-hiker-languages 4524
 exit_unless_clean test-hiker-languages
 
-wait_until_ready  test-hiker-server     5637
+wait_until_ready  test-hiker-server    5637
 exit_unless_clean test-hiker-server
 
 
-$(curl_cmd 4524 names)
-echo
 $(curl_cmd 5637 hike)
 echo
+docker logs test-hiker-server

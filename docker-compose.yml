@@ -32,8 +32,6 @@ services:
     image: cyberdojofoundation/image_hiker
     init: true
     container_name: test-hiker-server
-    stdin_open: true
-    tty: true
     read_only: true
     ports:
       - 5637:5637
@@ -52,8 +50,6 @@ services:
     image: cyberdojo/runner:latest
     init: true
     container_name: test-hiker-runner
-    stdin_open: true
-    tty: true
     ports:
       - 4597:4597
     volumes:
@@ -68,8 +64,6 @@ services:
     image: cyberdojo/ragger:latest
     init: true
     container_name: test-hiker-ragger
-    stdin_open: true
-    tty: true
     ports:
       - 5537:5537
     read_only: true
@@ -84,8 +78,6 @@ services:
     image: ${CYBER_DOJO_LANGUAGES}
     init: true
     container_name: test-hiker-languages
-    stdin_open: true
-    tty: true
     ports:
       - 4524:4524
     read_only: true
