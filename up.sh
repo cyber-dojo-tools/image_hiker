@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export RUBY_OPTS=-w
+export RUBYOPT=-w
 
 rackup             \
   --env production \

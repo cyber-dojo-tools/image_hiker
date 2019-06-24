@@ -49,9 +49,9 @@ exit_unless_clean()
   local -r line_count=$(echo -n "${docker_log}" | grep -c '^')
   echo "Checking ${name} started cleanly..."
   if [ "${line_count}" != '3' ]; then
-    #Thin web server (v1.7.2 codename Bachmanity)
-    #Maximum connections set to 1024
-    #Listening on 0.0.0.0:4597, CTRL+C to stop
+    # Thin web server (v1.7.2 codename Bachmanity)
+    # Maximum connections set to 1024
+    # Listening on 0.0.0.0:4597, CTRL+C to stop
     show_unclean_docker_log "${name}" "${docker_log}"
   fi
 }
