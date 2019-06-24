@@ -44,19 +44,30 @@ wait_until_ready()
 
 exit_unless_clean()
 {
-  local name="${1}"
-  local docker_logs=$(docker logs "${name}")
-  echo -n "Checking ${name} started cleanly..."
-  if [[ -z "${docker_logs}" ]]; then
-    echo 'OK'
-  else
-    echo 'FAIL'
-    echo "[docker logs] not empty on startup"
-    echo "<docker_log>"
-    echo "${docker_logs}"
-    echo "</docker_log>"
-    exit 1
+  local -r name="${1}"
+  local -r docker_log=$(docker logs "${name}")
+  local -r line_count=$(echo -n "${docker_log}" | grep -c '^')
+  echo "Checking ${name} started cleanly..."
+  if [ "${line_count}" != '3' ]; then
+    #Thin web server (v1.7.2 codename Bachmanity)
+    #Maximum connections set to 1024
+    #Listening on 0.0.0.0:4597, CTRL+C to stop
+    show_unclean_docker_log
   fi
+}
+
+# - - - - - - - - - - - - - - - - - - - - - -
+
+show_unclean_docker_log()
+{
+  local -r name="${1}"
+  local -r docker_log="${2}"
+  echo 'FAIL'
+  echo "[docker logs ${name}] not empty on startup"
+  echo "<docker_log>"
+  echo "${docker_log}"
+  echo "</docker_log>"
+  exit 1
 }
 
 # - - - - - - - - - - - - - - - - - - - - - -
@@ -67,21 +78,16 @@ docker-compose \
   -d \
   hiker
 
-sleep 1
-
-wait_until_ready  test-hiker-runner 4597
+wait_until_ready  test-hiker-runner    4597
 exit_unless_clean test-hiker-runner
 
-wait_until_ready  test-hiker-ragger 5537
+wait_until_ready  test-hiker-ragger    5537
 exit_unless_clean test-hiker-ragger
 
 wait_until_ready  test-hiker-languages 4524
 exit_unless_clean test-hiker-languages
 
-wait_until_ready  test-hiker-server 5637
-exit_unless_clean test-hiker-server
-
-docker ps -a
+wait_until_ready test-hiker-server     5637
 
 $(curl_cmd 4524 names)
 echo

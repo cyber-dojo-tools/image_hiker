@@ -14,7 +14,12 @@ class Hiker
   end
 
   def hike
-    puts languages.names
+    r = []
+    r << languages.names
+    r << "done"
+    r << 42
+    puts r
+    r
   end
 
   private
