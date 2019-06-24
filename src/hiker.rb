@@ -38,9 +38,9 @@ class Hiker
   private
 
   def files_from(manifest)
-    Hash[manifest['visible_files'].map do |filename, file|
-      [filename,file['content']]
-    end]
+    manifest['visible_files'].each_with_object({}) do |(filename, file),memo|
+      memo[filename] = file['content']
+    end
   end
 
   def traffic_light(image_name, id, files)
