@@ -52,7 +52,7 @@ exit_unless_clean()
     #Thin web server (v1.7.2 codename Bachmanity)
     #Maximum connections set to 1024
     #Listening on 0.0.0.0:4597, CTRL+C to stop
-    show_unclean_docker_log
+    show_unclean_docker_log "${name}" "${docker_log}"
   fi
 }
 
@@ -87,7 +87,9 @@ exit_unless_clean test-hiker-ragger
 wait_until_ready  test-hiker-languages 4524
 exit_unless_clean test-hiker-languages
 
-wait_until_ready test-hiker-server     5637
+wait_until_ready  test-hiker-server     5637
+exit_unless_clean test-hiker-server
+
 
 $(curl_cmd 4524 names)
 echo

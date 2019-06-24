@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export RUBY_OPTS=-w
+
 rackup             \
   --env production \
   --host 0.0.0.0   \
