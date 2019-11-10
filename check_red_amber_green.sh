@@ -5,10 +5,64 @@ readonly MY_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 readonly LTF_IMAGE_NAME=${1}
 readonly SRC_DIR=${2:-${PWD}}
 
-dot()
+# - - - - - - - - - - - - - - - - - - - - -
+
+ip_address()
 {
-  echo -n '.'
+  if [ -n "${DOCKER_MACHINE_NAME}" ]; then
+    docker-machine ip ${DOCKER_MACHINE_NAME}
+  else
+    echo localhost
+  fi
 }
+
+readonly IP_ADDRESS=$(ip_address)
+
+# - - - - - - - - - - - - - - - - - - - - -
+
+readonly READY_FILENAME='/tmp/curl-ready-output'
+
+wait_until_ready()
+{
+  local -r name="hiker-${1}"
+  local -r port="${2}"
+  local -r max_tries=20
+  echo -n "Waiting until ${name} is ready"
+  for _ in $(seq ${max_tries})
+  do
+    echo -n '.'
+    if ready ${port} ; then
+      echo 'OK'
+      return
+    else
+      sleep 0.2
+    fi
+  done
+  echo 'FAIL'
+  echo "${name} not ready after ${max_tries} tries"
+  if [ -f "${READY_FILENAME}" ]; then
+    echo "$(cat "${READY_FILENAME}")"
+  fi
+  docker logs ${name}
+  exit 4
+}
+
+# - - - - - - - - - - - - - - - - - - -
+
+ready()
+{
+  local -r port="${1}"
+  local -r path=ready?
+  local -r curl_cmd="curl --output ${READY_FILENAME} --silent --fail --data {} -X GET http://${IP_ADDRESS}:${port}/${path}"
+  rm -f "${READY_FILENAME}"
+  if ${curl_cmd} && [ "$(cat "${READY_FILENAME}")" = '{"ready?":true}' ]; then
+    true
+  else
+    false
+  fi
+}
+
+# - - - - - - - - - - - - - - - - - - -
 
 trap_handler()
 {
@@ -49,11 +103,12 @@ image_name()
 
 network_name()
 {
-  echo hiker-network
+  echo hiker
 }
 
 create_docker_network()
 {
+  echo "Creating network $(network_name)"
   local -r msg=$(docker network create $(network_name))
 }
 
@@ -76,6 +131,7 @@ remove_languages_service()
 
 start_languages_service()
 {
+  echo "Creating $(languages_service_name) service"
   local -r cid=$(docker run \
     --user nobody \
     --detach \
@@ -105,6 +161,7 @@ remove_runner_service()
 
 start_runner_service()
 {
+  echo "Creating $(runner_service_name) service"
   local -r cid=$(docker run \
      --user root \
      --detach \
@@ -135,6 +192,7 @@ remove_ragger_service()
 
 start_ragger_service()
 {
+  echo "Creating $(ragger_service_name) service"
   local -r cid=$(docker run \
     --user nobody \
     --detach \
@@ -180,13 +238,17 @@ run_hiker_service()
 
 # - - - - - - - - - - - - - - - - - - - - - - -
 
-dot && export $(version_tags)
-dot && create_docker_network
-dot && start_languages_service
-dot && start_runner_service
-dot && start_ragger_service
-sleep 2 # TODO: proper wait...
-dot && run_hiker_service
+export $(version_tags)
+create_docker_network
+start_languages_service
+start_runner_service
+start_ragger_service
+
+wait_until_ready languages 4524
+wait_until_ready runner    4597
+wait_until_ready ragger    5537
+
+run_hiker_service
 
 # if something goes wrong we need to look at ragger's log
 # docker logs $(ragger_service_name)
