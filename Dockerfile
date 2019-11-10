@@ -1,13 +1,6 @@
-FROM cyberdojo/rack-base
+FROM cyberdojo/ruby-base
 LABEL maintainer=jon@jaggersoft.com
 
-WORKDIR /app
-COPY . .
-RUN chown -R nobody .
+COPY . /app
 
-ARG SHA
-ENV SHA=${SHA}
-
-EXPOSE 5637
-USER nobody
-CMD [ "./up.sh" ]
+ENTRYPOINT [ "ruby", "/app/src/hiker.rb" ]

@@ -8,10 +8,6 @@ class RaggerService
     @http = HttpJson::ResponseUnpacker.new(requester)
   end
 
-  def ready?
-    @http.get(__method__, {})
-  end
-
   def colour(image_name, id, stdout, stderr, status)
     @http.get(__method__, {
       image_name:image_name,

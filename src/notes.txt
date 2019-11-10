@@ -1,23 +1,26 @@
 
-There are two arguments to image_hiker
-o) the name of the start-point image
-   Create the start-point image outside and
-   pass in as an argument to image_hiker.
-o) the name of the LTF image passed to the runner
-   This is inside the start-points manifest.json file.
-   Create this outside and pass in as an argument to image_hiker.
 
-So image_hiker will be a docker-image that
-o) has docker-compose inside it
-o) is passed the names of
-   1) the start-point image
-   2) the LTF image (this will be inside the start-point too)
-o) it will start a languages service from 1)
-o) it will start a runner service
-o) it will start a ragger service
-o) it will...
+The image_builder/build_test_push_notify.sh (btpn) script will do these steps...
+o) choose the tag for cyberdojo/versioner:tag
+   Default to :latest
+o) get the /app/.env file from versioner:${TAG} and export it's env-vars
+o) start a docker network, and on it...
+   - start a languages:latest service from the already-built start-point image
+   - start a runner:tag service (tag from versioner)
+   - start a ragger:tag service (tag from versioner)
+   - start a hiker service
+       volume-mount the src-dir (arg to btpn, defaults to cwd)
+         allows access to manifest.json and thus display_name
+         allows access to options.json (if it exists)
+
+o) the hiker service's entrypoint will ...
    - get the starting-files from the language service
    - pass them to runner and get back stdout/stderr/status
-   - pass sss to ragger and confirm red
+   - pass sss to ragger and confirm colour=red
    - s/6 * 9/6 * sdf/ and repeat, confirm an amber
    - s/6 * 9/6 * 7/ and repeat, confirm a green
+
+
+Note that the btpn script relies (when run locally) on the ../commander/cyber-dojo
+script being present. Check this (does the script curl this if not present?)
+If need be, update the notes in the cyber-dojo/cyber-dojo/CONTRIBUTING.md re this...

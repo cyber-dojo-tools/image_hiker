@@ -8,10 +8,6 @@ class LanguagesService
     @http = HttpJson::ResponseUnpacker.new(requester)
   end
 
-  def ready?
-    @http.get(__method__, {})
-  end
-
   def names
     @http.get(__method__, {})
   end

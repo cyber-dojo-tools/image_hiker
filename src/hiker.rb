@@ -5,14 +5,6 @@ class Hiker
     @external = external
   end
 
-  def sha
-    ENV['SHA']
-  end
-
-  def ready?
-    languages.ready? && ragger.ready? && runner.ready?
-  end
-
   def hike
     names = languages.names
     name = names[0]
@@ -21,25 +13,23 @@ class Hiker
     id = '34de2W'
     files = files_from(manifest)
     colour1 = traffic_light(image_name, id, files)
-    files['hiker.c'].sub!('6 * 9', '6 * 9sdsd')
-    colour2 = traffic_light(image_name, id, files)
-    files['hiker.c'].sub!('6 * 9sdsd', '6 * 7')
-    colour3 = traffic_light(image_name, id, files)
 
-    STDOUT.puts names
-    STDOUT.puts image_name
-    STDOUT.puts id
+    #files['hiker.c'].sub!('6 * 9', '6 * 9sdsd')
+    #colour2 = traffic_light(image_name, id, files)
+    #files['hiker.c'].sub!('6 * 9sdsd', '6 * 7')
+    #colour3 = traffic_light(image_name, id, files)
+
     STDOUT.puts colour1
-    STDOUT.puts colour2
-    STDOUT.puts colour3
+    #STDOUT.puts colour2
+    #STDOUT.puts colour3
     STDOUT.flush
   end
 
   private
 
   def files_from(manifest)
-    manifest['visible_files'].each_with_object({}) do |(filename, file),memo|
-      memo[filename] = file['content']
+    manifest['visible_files'].each_with_object({}) do |(filename, file),files|
+      files[filename] = file['content']
     end
   end
 
@@ -63,8 +53,9 @@ class Hiker
     @external.runner
   end
 
-  def log
-    @external.log
-  end
-
 end
+
+require_relative 'external'
+external = External.new
+hiker = Hiker.new(external)
+hiker.hike
