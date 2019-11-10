@@ -12,16 +12,18 @@ class Hiker
     image_name = manifest['image_name']
     id = '34de2W'
     files = files_from(manifest)
-    colour1 = traffic_light(image_name, id, files)
+    red_colour = traffic_light(image_name, id, files)
+    STDOUT.puts red_colour
 
-    #files['hiker.c'].sub!('6 * 9', '6 * 9sdsd')
-    #colour2 = traffic_light(image_name, id, files)
-    #files['hiker.c'].sub!('6 * 9sdsd', '6 * 7')
-    #colour3 = traffic_light(image_name, id, files)
+    filename = files.select{|file,content| content.include?('6 * 9')}.keys[0]
+    files[filename].sub!('6 * 9', '6 * 9sdsd')
+    amber_colour = traffic_light(image_name, id, files)
+    STDOUT.puts amber_colour
 
-    STDOUT.puts colour1
-    #STDOUT.puts colour2
-    #STDOUT.puts colour3
+    files[filename].sub!('6 * 9sdsd', '6 * 7')
+    green_colour = traffic_light(image_name, id, files)
+    STDOUT.puts green_colour
+
     STDOUT.flush
   end
 
