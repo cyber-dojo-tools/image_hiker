@@ -5,6 +5,11 @@ readonly MY_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 readonly LTF_IMAGE_NAME=${1}
 readonly SRC_DIR=${2:-${PWD}}
 
+dot()
+{
+  echo -n '.'
+}
+
 trap_handler()
 {
   remove_languages_service
@@ -175,13 +180,13 @@ run_hiker_service()
 
 # - - - - - - - - - - - - - - - - - - - - - - -
 
-export $(version_tags)
-create_docker_network
-start_languages_service
-start_runner_service
-start_ragger_service
+dot && export $(version_tags)
+dot && create_docker_network
+dot && start_languages_service
+dot && start_runner_service
+dot && start_ragger_service
 sleep 2 # TODO: proper wait...
-run_hiker_service
+dot && run_hiker_service
 
 # if something goes wrong we need to look at ragger's log
 # docker logs $(ragger_service_name)

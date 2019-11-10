@@ -1,4 +1,11 @@
 
+$ cd cyber-dojo-languages
+$ cd java-junit
+$ ./pipe_build_up_test.sh
+# this creates start-point called jj1
+$ cd ../image_hiker
+$ ./check_red_amber_green.sh jj1 ../java-junit
+
 
 The image_builder/build_test_push_notify.sh (btpn) script will do these steps...
 o) choose the tag for cyberdojo/versioner:tag
