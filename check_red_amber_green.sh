@@ -106,7 +106,7 @@ image_name()
 # - - - - - - - - - - - - - - - - - - - - - - -
 network_name()
 {
-  echo hiker
+  echo traffic-light
 }
 
 create_docker_network()
@@ -136,17 +136,17 @@ start_languages_service()
   local -r port="${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}"
   echo "Creating $(languages_service_name) service"
   local -r cid=$(docker run \
-    --user nobody \
     --detach \
+    --env NO_PROMETHEUS \
     --init \
+    --name $(languages_service_name) \
     --network $(network_name) \
     --network-alias languages \
-    --name $(languages_service_name) \
     --publish "${port}:${port}" \
-    --env NO_PROMETHEUS \
     --read-only \
-    --tmpfs /tmp \
     --restart no \
+    --tmpfs /tmp \
+    --user nobody \
       ${LTF_IMAGE_NAME})
 }
 
@@ -167,17 +167,17 @@ start_runner_service()
   local -r port="${CYBER_DOJO_RUNNER_PORT}"
   echo "Creating $(runner_service_name) service"
   local -r cid=$(docker run \
-     --user root \
      --detach \
+     --env NO_PROMETHEUS \
      --init \
+     --name $(runner_service_name) \
      --network $(network_name) \
      --network-alias runner \
-     --name $(runner_service_name) \
      --publish "${port}:${port}" \
-     --env NO_PROMETHEUS \
      --read-only \
-     --tmpfs /tmp \
      --restart no \
+     --tmpfs /tmp \
+     --user root \
      --volume /var/run/docker.sock:/var/run/docker.sock \
        "${image}")
 }
@@ -199,17 +199,17 @@ start_ragger_service()
   local -r port="${CYBER_DOJO_RAGGER_PORT}"
   echo "Creating $(ragger_service_name) service"
   local -r cid=$(docker run \
-    --user nobody \
     --detach \
+    --env NO_PROMETHEUS \
     --init \
+    --name $(ragger_service_name) \
     --network $(network_name) \
     --network-alias ragger \
-    --name $(ragger_service_name) \
     --publish "${port}:${port}" \
-    --env NO_PROMETHEUS \
     --read-only \
-    --tmpfs /tmp \
     --restart no \
+    --tmpfs /tmp \
+    --user nobody \
       "${image}")
 }
 
@@ -227,15 +227,15 @@ remove_hiker_service()
 run_hiker_service()
 {
   docker run \
-    --user nobody \
-    --init \
-    --network $(network_name) \
-    --name $(hiker_service_name) \
     --env NO_PROMETHEUS \
     --env SRC_DIR=$(src_dir_abs) \
+    --init \
+    --name $(hiker_service_name) \
+    --network $(network_name) \
     --read-only \
-    --tmpfs /tmp \
     --restart no \
+    --tmpfs /tmp \
+    --user nobody \
     --volume $(src_dir_abs):$(src_dir_abs):ro \
       cyberdojofoundation/image_hiker:latest
 }
@@ -260,4 +260,5 @@ wait_until_ready languages "${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}"
 run_hiker_service
 
 # if something goes wrong we need to look at ragger's log
-# docker logs $(ragger_service_name)
+# docker logs $(ragger_service_name). Better to pass red|amber|green
+# to hiker.

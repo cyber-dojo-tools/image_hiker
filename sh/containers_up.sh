@@ -17,18 +17,26 @@ readonly IP_ADDRESS=$(ip_address)
 # - - - - - - - - - - - - - - - - - - - - - -
 readonly READY_FILENAME='/tmp/curl-ready-output'
 
-wait_until_ready()
+up_and_wait_until_ready()
 {
-  local -r name="${1}"
-  local -r port="${2}"
+  local -r service="${1}"                # eg runner
+  local -r port="${2}"                   # eg 4597
+  local -r name="test-hiker-${service}"  # eg test-hiker-runner
   local -r max_tries=20
+
+  docker-compose \
+    --file "${ROOT_DIR}/docker-compose.yml" \
+    up \
+    --detach \
+    "${service}"
+
   printf "Waiting until ${name} is ready"
   for _ in $(seq ${max_tries})
   do
     #if $(curl_cmd ${port} ready?) ; then
     if ready "${port}" ; then
       printf '.OK\n'
-      exit_unless_clean "${name}" "${port}"
+      show_warnings "${name}" "${port}"
       return
     else
       printf .
@@ -59,20 +67,19 @@ ready()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - -
-exit_unless_clean()
+show_warnings()
 {
-  local -r name="${1}"
-  local -r port="${2}"
+  local -r name="${1}" # eg test-hiker-runner
+  local -r port="${2}" # eg 4597
   local -r docker_log="$(docker logs "${name}" 2>&1)"
-  local -r up_line="Listening on 0.0.0.0:${port}, CTRL+C to stop"
-  printf "Checking ${name} started cleanly..."
-  if echo "${docker_log}" | grep --silent "${up_line}" ; then
-    echo OK
-    echo "${up_line}"
-  else
-    echo FAIL
-    echo_docker_log "${name}" "${docker_log}"
-    exit 42
+  local stripped=${docker_log}
+  stripped="$(echo "${stripped}" | grep --invert-match "Thin web server (v1.7.2 codename Bachmanity)")"
+  stripped="$(echo "${stripped}" | grep --invert-match "Maximum connections set to 1024")"
+  stripped="$(echo "${stripped}" | grep --invert-match "Listening on 0.0.0.0:${port}, CTRL+C to stop")"
+  local -r count="$(echo "${stripped}" | grep --count "^")"
+  if [ "${count}" != '0' ]; then
+    echo "${count} warnings...."
+    echo "${stripped}"
   fi
 }
 
@@ -88,15 +95,9 @@ echo_docker_log()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - -
-docker-compose \
-  --file "${ROOT_DIR}/docker-compose.yml" \
-  up \
-  --detach \
-  hiker
+up_and_wait_until_ready runner    ${CYBER_DOJO_RUNNER_PORT}
+up_and_wait_until_ready ragger    ${CYBER_DOJO_RAGGER_PORT}
+up_and_wait_until_ready languages ${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}
 
-wait_until_ready test-hiker-runner    ${CYBER_DOJO_RUNNER_PORT}
-wait_until_ready test-hiker-ragger    ${CYBER_DOJO_RAGGER_PORT}
-wait_until_ready test-hiker-languages ${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}
-
-# TODO: this is obsolete...
-# Need to run the check_red_amber_green.sh script instead
+# TODO: now run hiker
+# Like check_red_amber_green.sh does...
