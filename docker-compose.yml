@@ -43,7 +43,7 @@ services:
     user: root
     image: ${CYBER_DOJO_RUNNER_IMAGE}:${CYBER_DOJO_RUNNER_TAG}
     init: true
-    container_name: test-hiker-runner
+    container_name: test-traffic-light-runner
     ports: [ "${CYBER_DOJO_RUNNER_PORT}:${CYBER_DOJO_RUNNER_PORT}" ]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -56,7 +56,7 @@ services:
     user: nobody
     image: ${CYBER_DOJO_RAGGER_IMAGE}:${CYBER_DOJO_RAGGER_TAG}
     init: true
-    container_name: test-hiker-ragger
+    container_name: test-traffic-light-ragger
     ports: [ "${CYBER_DOJO_RAGGER_PORT}:${CYBER_DOJO_RAGGER_PORT}" ]
     read_only: true
     tmpfs: /tmp
@@ -68,7 +68,7 @@ services:
     user: nobody
     image: ${CYBER_DOJO_LANGUAGES_START_POINTS_IMAGE}:${CYBER_DOJO_LANGUAGES_START_POINTS_TAG}
     init: true
-    container_name: test-hiker-languages
+    container_name: test-traffic-light-languages
     ports: [ "${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}:${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}" ]
     read_only: true
     tmpfs: /tmpfs

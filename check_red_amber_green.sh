@@ -19,12 +19,12 @@ readonly SRC_DIR=${2:-${PWD}}
 # $ cd ../image_hiker
 # $ ./check_red_amber_green.sh jj1 ../java-junit
 # Creating network hiker
-# Creating hiker-languages service
-# Creating hiker-ragger service
-# Creating hiker-runner service
-# Waiting until hiker-languages is ready.OK
-# Waiting until hiker-ragger is ready.....OK
-# Waiting until hiker-runner is ready.OK
+# Creating traffic-light-languages service
+# Creating traffic-light-ragger service
+# Creating traffic-light-runner service
+# Waiting until traffic-light-languages is ready.OK
+# Waiting until traffic-light-ragger is ready.....OK
+# Waiting until traffic-light-runner is ready.OK
 # {"colour"=>"red"}
 # {"colour"=>"amber"}
 # {"colour"=>"green"}
@@ -48,7 +48,7 @@ readonly READY_FILENAME='/tmp/curl-ready-output'
 
 wait_until_ready()
 {
-  local -r name="hiker-${1}"
+  local -r name="traffic-light-${1}"
   local -r port="${2}"
   local -r max_tries=20
   printf "Waiting until ${name} is ready"
@@ -93,9 +93,9 @@ ready()
 # - - - - - - - - - - - - - - - - - - -
 trap_handler()
 {
-  remove_languages_service
-  remove_runner_service
-  remove_ragger_service
+  remove_languages
+  remove_runner
+  remove_ragger
   remove_docker_network
 }
 
@@ -133,25 +133,25 @@ remove_docker_network()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
-languages_service_name()
+languages_name()
 {
-  echo hiker-languages
+  echo traffic-light-languages
 }
 
-remove_languages_service()
+remove_languages()
 {
-  docker rm --force $(languages_service_name) > /dev/null || true
+  docker rm --force $(languages_name) > /dev/null || true
 }
 
-start_languages_service()
+start_languages()
 {
   local -r port="${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}"
-  echo "Creating $(languages_service_name) service"
+  echo "Creating $(languages_name) service"
   local -r cid=$(docker run \
     --detach \
     --env NO_PROMETHEUS \
     --init \
-    --name $(languages_service_name) \
+    --name $(languages_name) \
     --network $(network_name) \
     --network-alias languages \
     --publish "${port}:${port}" \
@@ -163,26 +163,26 @@ start_languages_service()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
-runner_service_name()
+runner_name()
 {
-  echo hiker-runner
+  echo traffic-light-runner
 }
 
-remove_runner_service()
+remove_runner()
 {
-  docker rm --force $(runner_service_name) > /dev/null || true
+  docker rm --force $(runner_name) > /dev/null || true
 }
 
-start_runner_service()
+start_runner()
 {
   local -r image="${CYBER_DOJO_RUNNER_IMAGE}:${CYBER_DOJO_RUNNER_TAG}"
   local -r port="${CYBER_DOJO_RUNNER_PORT}"
-  echo "Creating $(runner_service_name) service"
+  echo "Creating $(runner_name) service"
   local -r cid=$(docker run \
      --detach \
      --env NO_PROMETHEUS \
      --init \
-     --name $(runner_service_name) \
+     --name $(runner_name) \
      --network $(network_name) \
      --network-alias runner \
      --publish "${port}:${port}" \
@@ -195,26 +195,26 @@ start_runner_service()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
-ragger_service_name()
+ragger_name()
 {
-  echo hiker-ragger
+  echo traffic-light-ragger
 }
 
-remove_ragger_service()
+remove_ragger()
 {
-  docker rm --force $(ragger_service_name) > /dev/null || true
+  docker rm --force $(ragger_name) > /dev/null || true
 }
 
-start_ragger_service()
+start_ragger()
 {
   local -r image="${CYBER_DOJO_RAGGER_IMAGE}:${CYBER_DOJO_RAGGER_TAG}"
   local -r port="${CYBER_DOJO_RAGGER_PORT}"
-  echo "Creating $(ragger_service_name) service"
+  echo "Creating $(ragger_name) service"
   local -r cid=$(docker run \
     --detach \
     --env NO_PROMETHEUS \
     --init \
-    --name $(ragger_service_name) \
+    --name $(ragger_name) \
     --network $(network_name) \
     --network-alias ragger \
     --publish "${port}:${port}" \
@@ -226,19 +226,19 @@ start_ragger_service()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
-hiker_service_name()
+traffic_light_name()
 {
-  echo hiker
+  echo traffic-light
 }
 
-run_hiker_service()
+run_traffic_light()
 {
   local -r colour="${1}" # eg red
   docker run \
     --env NO_PROMETHEUS \
     --env SRC_DIR=$(src_dir_abs) \
     --init \
-    --name $(hiker_service_name) \
+    --name $(traffic_light_name) \
     --network $(network_name) \
     --read-only \
     --restart no \
@@ -254,14 +254,14 @@ source "${ROOT_DIR}/sh/versioner_env_vars.sh"
 export $(versioner_env_vars)
 create_docker_network
 
-start_languages_service
-start_ragger_service
-start_runner_service
+start_languages
+start_ragger
+start_runner
 
 wait_until_ready languages "${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}"
 wait_until_ready ragger    "${CYBER_DOJO_RAGGER_PORT}"
 wait_until_ready runner    "${CYBER_DOJO_RUNNER_PORT}"
 
-run_hiker_service red
-run_hiker_service amber
-run_hiker_service green
+run_traffic_light red
+run_traffic_light amber
+run_traffic_light green
