@@ -1,9 +1,17 @@
 #!/bin/bash -Ee
 
 readonly ROOT_DIR="$( cd "$( dirname "${0}" )" && pwd )"
+
+# ${1} is the name of the languages-start-points image
+# assumed to have a single language-test-framework inside.
 readonly LTF_IMAGE_NAME=${1}
+
+# ${2} is the dir of the language-test-framework
 readonly SRC_DIR=${2:-${PWD}}
 
+# - - - - - - - - - - - - - - - - - - - - -
+# TODO: image_builder script will create LTF_IMAGE_NAME
+# from SRC_DIR which will become the only parameter.
 # - - - - - - - - - - - - - - - - - - - - -
 # $ cd ~/repo/cyber-dojo-languages/java-junit
 # $ ../../cyber-dojo/commander/cyber-dojo start-point create jj1 --languages ${PWD}
@@ -12,14 +20,14 @@ readonly SRC_DIR=${2:-${PWD}}
 # $ ./check_red_amber_green.sh jj1 ../java-junit
 # Creating network hiker
 # Creating hiker-languages service
-# Creating hiker-runner service
 # Creating hiker-ragger service
+# Creating hiker-runner service
+# Waiting until hiker-languages is ready.OK
 # Waiting until hiker-ragger is ready.....OK
 # Waiting until hiker-runner is ready.OK
-# Waiting until hiker-languages is ready.OK
-# red
-# amber
-# green
+# {"colour"=>"red"}
+# {"colour"=>"amber"}
+# {"colour"=>"green"}
 # - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -68,7 +76,12 @@ ready()
 {
   local -r port="${1}"
   local -r path=ready?
-  local -r curl_cmd="curl --output ${READY_FILENAME} --silent --fail --data {} -X GET http://${IP_ADDRESS}:${port}/${path}"
+  local -r curl_cmd="curl \
+    --output ${READY_FILENAME} \
+    --silent \
+    --fail \
+    --data {} \
+    -X GET http://${IP_ADDRESS}:${port}/${path}"
   rm -f "${READY_FILENAME}"
   if ${curl_cmd} && [ "$(cat "${READY_FILENAME}")" = '{"ready?":true}' ]; then
     true
@@ -240,18 +253,15 @@ run_hiker_service()
 source "${ROOT_DIR}/sh/versioner_env_vars.sh"
 export $(versioner_env_vars)
 create_docker_network
-start_languages_service
-start_runner_service
-start_ragger_service
 
+start_languages_service
+start_ragger_service
+start_runner_service
+
+wait_until_ready languages "${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}"
 wait_until_ready ragger    "${CYBER_DOJO_RAGGER_PORT}"
 wait_until_ready runner    "${CYBER_DOJO_RUNNER_PORT}"
-wait_until_ready languages "${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}"
 
 run_hiker_service red
 run_hiker_service amber
 run_hiker_service green
-
-# if something goes wrong we need to look at ragger's log
-# docker logs $(ragger_service_name). Better to pass red|amber|green
-# to hiker.
