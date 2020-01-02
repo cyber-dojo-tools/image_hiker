@@ -57,6 +57,7 @@ class Hiker
 
 end
 
+#- - - - - - - - - - - - - - - - - - - -
 require_relative 'external'
 external = External.new
 hiker = Hiker.new(external)

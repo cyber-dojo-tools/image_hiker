@@ -3,4 +3,4 @@ LABEL maintainer=jon@jaggersoft.com
 
 COPY . /app
 
-ENTRYPOINT [ "ruby", "/app/src/hiker.rb" ]
+ENTRYPOINT [ "ruby", "/app/hiker.rb" ]

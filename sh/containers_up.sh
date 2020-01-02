@@ -1,6 +1,8 @@
-#!/bin/bash
-set -e
+#!/bin/bash -Ee
 
+readonly ROOT_DIR="$( cd "$( dirname "${0}" )" && cd .. && pwd )"
+
+# - - - - - - - - - - - - - - - - - - - - - -
 ip_address()
 {
   if [ -n "${DOCKER_MACHINE_NAME}" ]; then
@@ -13,61 +15,68 @@ ip_address()
 readonly IP_ADDRESS=$(ip_address)
 
 # - - - - - - - - - - - - - - - - - - - - - -
+readonly READY_FILENAME='/tmp/curl-ready-output'
 
 wait_until_ready()
 {
   local -r name="${1}"
   local -r port="${2}"
   local -r max_tries=20
-  echo -n "Waiting until ${name} is ready"
+  printf "Waiting until ${name} is ready"
   for _ in $(seq ${max_tries})
   do
-    echo -n '.'
-    if $(curl_cmd ${port} ready?) ; then
-      echo 'OK'
+    #if $(curl_cmd ${port} ready?) ; then
+    if ready "${port}" ; then
+      printf '.OK\n'
+      exit_unless_clean "${name}" "${port}"
       return
     else
+      printf .
       sleep 0.2
     fi
   done
-  echo 'FAIL'
+  printf 'FAIL\n'
   echo "${name} not ready after ${max_tries} tries"
+  if [ -f "${READY_FILENAME}" ]; then
+    echo "$(cat "${READY_FILENAME}")"
+  fi
   docker logs ${name}
-  exit 1
+  exit 42
 }
 
 # - - - - - - - - - - - - - - - - - - - - - -
-
-curl_cmd()
+ready()
 {
   local -r port="${1}"
-  local -r path="${2}"
-  local -r cmd="curl --output /dev/null --silent --fail --data {} -X GET http://${IP_ADDRESS}:${port}/${path}"
-  echo "${cmd}"
-}
-
-# - - - - - - - - - - - - - - - - - - - - - -
-
-exit_unless_clean()
-{
-  local -r name="${1}"
-  local -r docker_log=$(docker logs "${name}")
-  local -r line_count=$(echo -n "${docker_log}" | grep -c '^')
-  echo -n "Checking ${name} started cleanly..."
-  if [ "${line_count}" == '3' ]; then
-    # Thin web server (v1.7.2 codename Bachmanity)
-    # Maximum connections set to 1024
-    # Listening on 0.0.0.0:4597, CTRL+C to stop
-    echo 'OK'
+  local -r path=ready?
+  local -r curl_cmd="curl --output ${READY_FILENAME} --silent --fail --data {} -X GET http://${IP_ADDRESS}:${port}/${path}"
+  rm -f "${READY_FILENAME}"
+  if ${curl_cmd} && [ "$(cat "${READY_FILENAME}")" = '{"ready?":true}' ]; then
+    true
   else
-    echo 'FAIL'
-    echo_docker_log "${name}" "${docker_log}"
-    exit 1
+    false
   fi
 }
 
 # - - - - - - - - - - - - - - - - - - - - - -
+exit_unless_clean()
+{
+  local -r name="${1}"
+  local -r port="${2}"
+  local -r docker_log="$(docker logs "${name}" 2>&1)"
+  local -r up_line="Listening on 0.0.0.0:${port}, CTRL+C to stop"
+  printf "Checking ${name} started cleanly..."
+  if echo "${docker_log}" | grep --silent "${up_line}" ; then
+    echo OK
+    echo "${up_line}"
+  else
+    echo FAIL
+    echo_docker_log "${name}" "${docker_log}"
+    exit 42
+  fi
+}
 
+# - - - - - - - - - - - - - - - - - - - - - -
 echo_docker_log()
 {
   local -r name="${1}"
@@ -79,28 +88,15 @@ echo_docker_log()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - -
-
-readonly ROOT_DIR="$( cd "$( dirname "${0}" )" && cd .. && pwd )"
-
 docker-compose \
   --file "${ROOT_DIR}/docker-compose.yml" \
   up \
-  -d \
+  --detach \
   hiker
 
-wait_until_ready  test-hiker-runner    4597
-exit_unless_clean test-hiker-runner
+wait_until_ready test-hiker-runner    ${CYBER_DOJO_RUNNER_PORT}
+wait_until_ready test-hiker-ragger    ${CYBER_DOJO_RAGGER_PORT}
+wait_until_ready test-hiker-languages ${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}
 
-wait_until_ready  test-hiker-ragger    5537
-exit_unless_clean test-hiker-ragger
-
-wait_until_ready  test-hiker-languages 4524
-exit_unless_clean test-hiker-languages
-
-wait_until_ready  test-hiker-server    5637
-exit_unless_clean test-hiker-server
-
-
-$(curl_cmd 5637 hike)
-echo
-docker logs test-hiker-server
+# TODO: this is obsolete...
+# Need to run the check_red_amber_green.sh script instead

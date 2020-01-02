@@ -1,12 +1,29 @@
-#!/bin/bash
-set -e
+#!/bin/bash -Ee
 
 readonly MY_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 readonly LTF_IMAGE_NAME=${1}
 readonly SRC_DIR=${2:-${PWD}}
 
 # - - - - - - - - - - - - - - - - - - - - -
+# $ cd ~/repo/cyber-dojo-languages/java-junit
+# $ ../../cyber-dojo/commander/cyber-dojo start-point create jj1 --languages ${PWD}
+# this creates start-point called jj1
+# $ cd ../image_hiker
+# $ ./check_red_amber_green.sh jj1 ../java-junit
+# Creating network hiker
+# Creating hiker-languages service
+# Creating hiker-runner service
+# Creating hiker-ragger service
+# Waiting until hiker-ragger is ready.....OK
+# Waiting until hiker-runner is ready.OK
+# Waiting until hiker-languages is ready.OK
+# red
+# amber
+# green
+# - - - - - - - - - - - - - - - - - - - - -
 
+
+# - - - - - - - - - - - - - - - - - - - - -
 ip_address()
 {
   if [ -n "${DOCKER_MACHINE_NAME}" ]; then
@@ -19,7 +36,6 @@ ip_address()
 readonly IP_ADDRESS=$(ip_address)
 
 # - - - - - - - - - - - - - - - - - - - - -
-
 readonly READY_FILENAME='/tmp/curl-ready-output'
 
 wait_until_ready()
@@ -27,28 +43,27 @@ wait_until_ready()
   local -r name="hiker-${1}"
   local -r port="${2}"
   local -r max_tries=20
-  echo -n "Waiting until ${name} is ready"
+  printf "Waiting until ${name} is ready"
   for _ in $(seq ${max_tries})
   do
-    echo -n '.'
     if ready ${port} ; then
-      echo 'OK'
+      printf '.OK\n'
       return
     else
+      printf .
       sleep 0.2
     fi
   done
-  echo 'FAIL'
+  printf 'FAIL\n'
   echo "${name} not ready after ${max_tries} tries"
   if [ -f "${READY_FILENAME}" ]; then
     echo "$(cat "${READY_FILENAME}")"
   fi
   docker logs ${name}
-  exit 4
+  exit 42
 }
 
 # - - - - - - - - - - - - - - - - - - -
-
 ready()
 {
   local -r port="${1}"
@@ -63,7 +78,6 @@ ready()
 }
 
 # - - - - - - - - - - - - - - - - - - -
-
 trap_handler()
 {
   remove_languages_service
@@ -73,17 +87,7 @@ trap_handler()
   remove_docker_network
 }
 
-trap trap_handler INT EXIT
-
-version_tags()
-{
-  local -r tag=${CYBER_DOJO_VERSION_TAG:-latest}
-  docker run \
-    --rm \
-    --entrypoint cat \
-    cyberdojo/versioner:${tag} \
-      '/app/.env'
-}
+trap trap_handler EXIT
 
 src_dir_abs()
 {
@@ -100,7 +104,6 @@ image_name()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
-
 network_name()
 {
   echo hiker
@@ -118,7 +121,6 @@ remove_docker_network()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
-
 languages_service_name()
 {
   echo hiker-languages
@@ -131,6 +133,7 @@ remove_languages_service()
 
 start_languages_service()
 {
+  local -r port="${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}"
   echo "Creating $(languages_service_name) service"
   local -r cid=$(docker run \
     --user nobody \
@@ -139,7 +142,7 @@ start_languages_service()
     --network $(network_name) \
     --network-alias languages \
     --name $(languages_service_name) \
-    -p 4524:4524 \
+    --publish "${port}:${port}" \
     --env NO_PROMETHEUS \
     --read-only \
     --tmpfs /tmp \
@@ -148,7 +151,6 @@ start_languages_service()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
-
 runner_service_name()
 {
   echo hiker-runner
@@ -161,6 +163,8 @@ remove_runner_service()
 
 start_runner_service()
 {
+  local -r image="${CYBER_DOJO_RUNNER_IMAGE}:${CYBER_DOJO_RUNNER_TAG}"
+  local -r port="${CYBER_DOJO_RUNNER_PORT}"
   echo "Creating $(runner_service_name) service"
   local -r cid=$(docker run \
      --user root \
@@ -169,17 +173,16 @@ start_runner_service()
      --network $(network_name) \
      --network-alias runner \
      --name $(runner_service_name) \
-     -p 4597:4597 \
+     --publish "${port}:${port}" \
      --env NO_PROMETHEUS \
      --read-only \
      --tmpfs /tmp \
      --restart no \
      --volume /var/run/docker.sock:/var/run/docker.sock \
-       cyberdojo/runner:${CYBER_DOJO_RUNNER_TAG})
+       "${image}")
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
-
 ragger_service_name()
 {
   echo hiker-ragger
@@ -192,6 +195,8 @@ remove_ragger_service()
 
 start_ragger_service()
 {
+  local -r image="${CYBER_DOJO_RAGGER_IMAGE}:${CYBER_DOJO_RAGGER_TAG}"
+  local -r port="${CYBER_DOJO_RAGGER_PORT}"
   echo "Creating $(ragger_service_name) service"
   local -r cid=$(docker run \
     --user nobody \
@@ -200,16 +205,15 @@ start_ragger_service()
     --network $(network_name) \
     --network-alias ragger \
     --name $(ragger_service_name) \
-    -p 5537:5537 \
+    --publish "${port}:${port}" \
     --env NO_PROMETHEUS \
     --read-only \
     --tmpfs /tmp \
     --restart no \
-      cyberdojo/ragger:${CYBER_DOJO_RAGGER_TAG})
+      "${image}")
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
-
 hiker_service_name()
 {
   echo hiker
@@ -237,16 +241,21 @@ run_hiker_service()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
+versioner_env_vars()
+{
+  docker run --rm --entrypoint cat cyberdojo/versioner:latest '/app/.env'
+}
 
-export $(version_tags)
+# - - - - - - - - - - - - - - - - - - - - - - -
+export $(versioner_env_vars)
 create_docker_network
 start_languages_service
 start_runner_service
 start_ragger_service
 
-wait_until_ready languages 4524
-wait_until_ready runner    4597
-wait_until_ready ragger    5537
+wait_until_ready ragger    "${CYBER_DOJO_RAGGER_PORT}"
+wait_until_ready runner    "${CYBER_DOJO_RUNNER_PORT}"
+wait_until_ready languages "${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}"
 
 run_hiker_service
 

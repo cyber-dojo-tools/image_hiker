@@ -15,41 +15,36 @@ services:
     restart: 'no'
     depends_on:
       - hiker
-    #ports:
-    #  - 4548:4548
-    #volumes:
-    #  - ./test_client:/app/test:ro
+    #ports: [ "4548:4548" ]
+    #volumes: [ "./test_client:/app/test:ro" ]
 
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   hiker:
     build:
-      context: .
+      context: app
     user: nobody
     image: cyberdojofoundation/image_hiker
     init: true
     container_name: test-hiker-server
     read_only: true
-    ports:
-      - 5637:5637
+    ports: [ "5637:5637" ]
     tmpfs: /tmp
     restart: 'no'
     depends_on:
       - runner
       - ragger
       - languages
-    #volumes:
-    #  - ./test_server:/app/test:ro
+    #volumes: [ "./test_server:/app/test:ro" ]
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   runner:
     user: root
-    image: cyberdojo/runner:latest
+    image: ${CYBER_DOJO_RUNNER_IMAGE}:${CYBER_DOJO_RUNNER_TAG}
     init: true
     container_name: test-hiker-runner
-    ports:
-      - 4597:4597
+    ports: [ "${CYBER_DOJO_RUNNER_PORT}:${CYBER_DOJO_RUNNER_PORT}" ]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     read_only: true
@@ -59,25 +54,22 @@ services:
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ragger:
     user: nobody
-    image: cyberdojo/ragger:latest
+    image: ${CYBER_DOJO_RAGGER_IMAGE}:${CYBER_DOJO_RAGGER_TAG}
     init: true
     container_name: test-hiker-ragger
-    ports:
-      - 5537:5537
+    ports: [ "${CYBER_DOJO_RAGGER_PORT}:${CYBER_DOJO_RAGGER_PORT}" ]
     read_only: true
     tmpfs: /tmp
     restart: 'no'
-    depends_on:
-      - runner
+    depends_on: [ runner ]
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   languages:
     user: nobody
-    image: ${CYBER_DOJO_LANGUAGES}
+    image: ${CYBER_DOJO_LANGUAGES_START_POINTS_IMAGE}:${CYBER_DOJO_LANGUAGES_START_POINTS_TAG}
     init: true
     container_name: test-hiker-languages
-    ports:
-      - 4524:4524
+    ports: [ "${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}:${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}" ]
     read_only: true
     tmpfs: /tmpfs
     restart: 'no'
