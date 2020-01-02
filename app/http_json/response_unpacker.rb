@@ -4,8 +4,9 @@ module HttpJson
 
   class ResponseUnpacker
 
-    def initialize(requester)
+    def initialize(requester, options = {})
       @requester = requester
+      @options = options
     end
 
     def get(path, args)
@@ -27,7 +28,11 @@ module HttpJson
       unless json.key?(path)
         fail "key for '#{path}' is missing"
       end
-      json[path]
+      if @options[:raw]
+        json
+      else
+        json[path]
+      end
     end
 
   end

@@ -1,6 +1,6 @@
 #!/bin/bash -Ee
 
-readonly MY_DIR="$( cd "$( dirname "${0}" )" && pwd )"
+readonly ROOT_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 readonly LTF_IMAGE_NAME=${1}
 readonly SRC_DIR=${2:-${PWD}}
 
@@ -241,12 +241,7 @@ run_hiker_service()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
-versioner_env_vars()
-{
-  docker run --rm --entrypoint cat cyberdojo/versioner:latest '/app/.env'
-}
-
-# - - - - - - - - - - - - - - - - - - - - - - -
+source "${ROOT_DIR}/sh/versioner_env_vars.sh"
 export $(versioner_env_vars)
 create_docker_network
 start_languages_service

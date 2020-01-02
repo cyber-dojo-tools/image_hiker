@@ -5,7 +5,7 @@ class RaggerService
 
   def initialize(external)
     requester = HttpJson::RequestPacker.new(external, 'ragger', 5537)
-    @http = HttpJson::ResponseUnpacker.new(requester)
+    @http = HttpJson::ResponseUnpacker.new(requester, { raw:true })
   end
 
   def colour(image_name, id, stdout, stderr, status)
