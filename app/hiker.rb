@@ -5,29 +5,25 @@ class Hiker
     @external = external
   end
 
-  def hike
+  def hike(colour)
     names = languages.names
     name = names[0]
     manifest = languages.manifest(name)
     image_name = manifest['image_name']
     id = '34de2W'
     files = files_from(manifest)
-    red_colour = traffic_light(image_name, id, files)
-    STDOUT.puts red_colour
-
     filename = files.select{|file,content| content.include?('6 * 9')}.keys[0]
-    files[filename].sub!('6 * 9', '6 * 9sdsd')
-    amber_colour = traffic_light(image_name, id, files)
-    STDOUT.puts amber_colour
-
-    files[filename].sub!('6 * 9sdsd', '6 * 7')
-    green_colour = traffic_light(image_name, id, files)
-    STDOUT.puts green_colour
-
-    STDOUT.flush
+    files[filename].sub!('6 * 9', SUB_TEXT[colour])
+    puts(traffic_light(image_name, id, files))
   end
 
   private
+
+  SUB_TEXT = {
+    'red'   => '6 * 9',
+    'amber' => '6 * 9sdsd',
+    'green' => '6 * 7'
+  }
 
   def files_from(manifest)
     manifest['visible_files'].each_with_object({}) do |(filename, file),files|
@@ -61,4 +57,4 @@ end
 require_relative 'external'
 external = External.new
 hiker = Hiker.new(external)
-hiker.hike
+hiker.hike(ARGV[0])

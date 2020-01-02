@@ -83,7 +83,6 @@ trap_handler()
   remove_languages_service
   remove_runner_service
   remove_ragger_service
-  remove_hiker_service
   remove_docker_network
 }
 
@@ -219,13 +218,9 @@ hiker_service_name()
   echo hiker
 }
 
-remove_hiker_service()
-{
-  docker rm --force $(hiker_service_name) > /dev/null || true
-}
-
 run_hiker_service()
 {
+  local -r colour="${1}" # eg red
   docker run \
     --env NO_PROMETHEUS \
     --env SRC_DIR=$(src_dir_abs) \
@@ -234,10 +229,11 @@ run_hiker_service()
     --network $(network_name) \
     --read-only \
     --restart no \
+    --rm \
     --tmpfs /tmp \
     --user nobody \
     --volume $(src_dir_abs):$(src_dir_abs):ro \
-      cyberdojofoundation/image_hiker:latest
+      cyberdojofoundation/image_hiker:latest "${colour}"
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
@@ -252,7 +248,9 @@ wait_until_ready ragger    "${CYBER_DOJO_RAGGER_PORT}"
 wait_until_ready runner    "${CYBER_DOJO_RUNNER_PORT}"
 wait_until_ready languages "${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}"
 
-run_hiker_service
+run_hiker_service red
+run_hiker_service amber
+run_hiker_service green
 
 # if something goes wrong we need to look at ragger's log
 # docker logs $(ragger_service_name). Better to pass red|amber|green
