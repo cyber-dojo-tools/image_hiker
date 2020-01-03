@@ -15,6 +15,9 @@ class Hiker
     filename = files.select{|file,content| content.include?('6 * 9')}.keys[0]
     files[filename].sub!('6 * 9', SUB_TEXT[colour])
     hash = traffic_light(image_name, id, files)
+    line_split(hash, 'stdout')
+    line_split(hash, 'stderr')
+    line_split(hash, 'lambda')
     puts JSON.pretty_generate(hash)
   end
 
@@ -25,6 +28,14 @@ class Hiker
     'amber' => '6 * 9sdsd',
     'green' => '6 * 7'
   }
+
+  def line_split(hash, key)
+    if hash.has_key?('diagnostic')
+      if hash['diagnostic'].has_key?(key)
+        hash['diagnostic'][key] = hash['diagnostic'][key].lines
+      end
+    end
+  end
 
   def files_from(manifest)
     manifest['visible_files'].each_with_object({}) do |(filename, file),files|
