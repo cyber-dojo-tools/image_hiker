@@ -1,12 +1,8 @@
 version: 2
 jobs:
   build-publish:
-
     machine:
-      enabled: true
-
-    working_directory: ~/repo
-
+      image: ubuntu-1604:201903-01
     steps:
       - checkout
       - run:
@@ -28,5 +24,4 @@ workflows:
       - build-publish:
           filters:
             branches:
-              only:
-                  - master
+              only: [ master ]
