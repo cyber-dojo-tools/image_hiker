@@ -14,7 +14,8 @@ class Hiker
     files = files_from(manifest)
     filename = files.select{|file,content| content.include?('6 * 9')}.keys[0]
     files[filename].sub!('6 * 9', SUB_TEXT[colour])
-    puts(traffic_light(image_name, id, files))
+    hash = traffic_light(image_name, id, files)
+    puts JSON.pretty_generate(hash)
   end
 
   private
