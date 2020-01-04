@@ -21,7 +21,7 @@ up_and_wait_until_ready()
 {
   local -r service="${1}"                # eg runner
   local -r port="${2}"                   # eg 4597
-  local -r name="test-hiker-${service}"  # eg test-hiker-runner
+  local -r name="test-traffic-light-${service}"  # eg test-traffic-light-runner
   local -r max_tries=20
 
   docker-compose \
@@ -69,7 +69,7 @@ ready()
 # - - - - - - - - - - - - - - - - - - - - - -
 show_warnings()
 {
-  local -r name="${1}" # eg test-hiker-runner
+  local -r name="${1}" # eg test-traffic-light-runner
   local -r port="${2}" # eg 4597
   local -r docker_log="$(docker logs "${name}" 2>&1)"
   local stripped=${docker_log}
@@ -79,7 +79,7 @@ show_warnings()
   local -r count="$(echo "${stripped}" | grep --count "^")"
   if [ "${count}" != '0' ]; then
     echo "${count} warnings...."
-    echo "${stripped}"
+    #echo "${stripped}"
   fi
 }
 
@@ -97,7 +97,6 @@ echo_docker_log()
 # - - - - - - - - - - - - - - - - - - - - - -
 up_and_wait_until_ready runner    ${CYBER_DOJO_RUNNER_PORT}
 up_and_wait_until_ready ragger    ${CYBER_DOJO_RAGGER_PORT}
-up_and_wait_until_ready languages ${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}
+up_and_wait_until_ready languages-start-points ${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}
 
-# TODO: now run hiker
-# Like check_red_amber_green.sh does...
+echo TODO: now run hiker like check_red_amber_green.sh does...

@@ -13,8 +13,7 @@ services:
     read_only: true
     tmpfs: /tmp
     restart: 'no'
-    depends_on:
-      - hiker
+    depends_on: [ hiker ]
     #ports: [ "4548:4548" ]
     #volumes: [ "./test_client:/app/test:ro" ]
 
@@ -35,7 +34,7 @@ services:
     depends_on:
       - runner
       - ragger
-      - languages
+      - languages-start-points
     #volumes: [ "./test_server:/app/test:ro" ]
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,11 +63,11 @@ services:
     depends_on: [ runner ]
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  languages:
+  languages-start-points:
     user: nobody
     image: ${CYBER_DOJO_LANGUAGES_START_POINTS_IMAGE}:${CYBER_DOJO_LANGUAGES_START_POINTS_TAG}
     init: true
-    container_name: test-traffic-light-languages
+    container_name: test-traffic-light-languages-start-points
     ports: [ "${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}:${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}" ]
     read_only: true
     tmpfs: /tmpfs

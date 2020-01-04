@@ -6,9 +6,9 @@ class Hiker
   end
 
   def hike(colour)
-    names = languages.names
+    names = languages_start_points.names
     name = names[0]
-    manifest = languages.manifest(name)
+    manifest = languages_start_points.manifest(name)
     image_name = manifest['image_name']
     id = '34de2W'
     files = files_from(manifest)
@@ -51,8 +51,8 @@ class Hiker
     ragger.colour(image_name, id, stdout, stderr, status)
   end
 
-  def languages
-    @external.languages
+  def languages_start_points
+    @external.languages_start_points
   end
 
   def ragger
