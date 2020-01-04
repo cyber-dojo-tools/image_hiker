@@ -18,6 +18,7 @@ class Hiker
     line_split(hash, 'stdout')
     line_split(hash, 'stderr')
     line_split(hash, 'lambda')
+    line_split(hash, 'exception')
     puts JSON.pretty_generate(hash)
   end
 
