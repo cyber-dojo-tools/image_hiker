@@ -8,4 +8,4 @@ export $(versioner_env_vars)
 "${SH_DIR}/build_docker_images.sh"
 "${SH_DIR}/containers_up.sh"
 echo TODO: now run hiker like check_red_amber_green.sh does...
-echo TODO: bring down containers
+"${SH_DIR}/containers_down.sh"

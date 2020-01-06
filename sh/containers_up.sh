@@ -19,8 +19,8 @@ readonly READY_FILENAME='/tmp/curl-ready-output'
 
 up_and_wait_until_ready()
 {
-  local -r service="${1}"                # eg runner
-  local -r port="${2}"                   # eg 4597
+  local -r service="${1}"                        # eg runner
+  local -r port="${2}"                           # eg 4597
   local -r name="test-traffic-light-${service}"  # eg test-traffic-light-runner
   local -r max_tries=20
 
@@ -33,7 +33,6 @@ up_and_wait_until_ready()
   printf "Waiting until ${name} is ready"
   for _ in $(seq ${max_tries})
   do
-    #if $(curl_cmd ${port} ready?) ; then
     if ready "${port}" ; then
       printf '.OK\n'
       show_warnings "${name}" "${port}"
@@ -57,7 +56,12 @@ ready()
 {
   local -r port="${1}"
   local -r path=ready?
-  local -r curl_cmd="curl --output ${READY_FILENAME} --silent --fail --data {} -X GET http://${IP_ADDRESS}:${port}/${path}"
+  local -r curl_cmd="curl \
+    --data {} \
+    --fail \
+    --output ${READY_FILENAME} \
+    --silent \
+    -X GET http://${IP_ADDRESS}:${port}/${path}"
   rm -f "${READY_FILENAME}"
   if ${curl_cmd} && [ "$(cat "${READY_FILENAME}")" = '{"ready?":true}' ]; then
     true
