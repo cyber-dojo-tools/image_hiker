@@ -14,12 +14,19 @@ class Hiker
     files = files_from(manifest)
     filename = files.select{|file,content| content.include?('6 * 9')}.keys[0]
     files[filename].sub!('6 * 9', SUB_TEXT[colour])
-    hash = traffic_light(image_name, id, files)
-    line_split(hash, 'stdout')
-    line_split(hash, 'stderr')
-    line_split(hash, 'lambda')
-    line_split(hash, 'message')
-    puts JSON.pretty_generate(hash)
+    result = traffic_light(image_name, id, files)
+    if result === {'colour'=>colour}
+      puts "Testing #{colour} PASSED"
+      exit(0)
+    else
+      line_split(result, 'stdout')
+      line_split(result, 'stderr')
+      line_split(result, 'source')
+      line_split(result, 'message')
+      puts JSON.pretty_generate(result)
+      puts "Testing #{colour} FAILED"
+      exit(42)
+    end
   end
 
   private
