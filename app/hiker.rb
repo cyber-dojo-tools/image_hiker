@@ -5,6 +5,8 @@ class Hiker
     @external = external
   end
 
+  # - - - - - - - - - - - - - - - - - - -
+
   def hike(colour)
     names = languages_start_points.names
     name = names[0]
@@ -12,17 +14,20 @@ class Hiker
     image_name = manifest['image_name']
     id = '34de2W'
     files = files_from(manifest)
-    filename = files.select{|file,content| content.include?('6 * 9')}.keys[0]
-    files[filename].sub!('6 * 9', SUB_TEXT[colour])
+    filename = files.find{|_file,content| content.include?('6 * 9')}[0]
+    files[filename].sub!('6 * 9', TEXT_SUB[colour])
     result = traffic_light(image_name, id, files)
-    if result === {'colour'=>colour}
+
+    if result['colour'] === colour
       puts "Testing #{colour} PASSED"
       exit(0)
     else
-      line_split(result, 'stdout')
-      line_split(result, 'stderr')
-      line_split(result, 'source')
-      line_split(result, 'message')
+      split_run(result, 'stdout')
+      split_run(result, 'stderr')
+      split_run_array(result, 'created')
+      split_run_array(result, 'changed')
+      split_diagnostic(result, 'rag_lambda')
+      split_diagnostic(result, 'message')
       puts JSON.pretty_generate(result)
       puts "Testing #{colour} FAILED"
       exit(42)
@@ -31,19 +36,38 @@ class Hiker
 
   private
 
-  SUB_TEXT = {
+  TEXT_SUB = {
     'red'   => '6 * 9',
     'amber' => '6 * 9sdsd',
     'green' => '6 * 7'
   }
 
-  def line_split(hash, key)
-    if hash.has_key?('diagnostic')
-      if hash['diagnostic'].has_key?(key)
-        hash['diagnostic'][key] = hash['diagnostic'][key].lines
-      end
+  # - - - - - - - - - - - - - - - - - - -
+
+  def split_run(result, key)
+    part = result['run_cyber_dojo_sh']
+    part[key]['content'] = part[key]['content'].lines
+  end
+
+  # - - - - - - - - - - - - - - - - - - -
+
+  def split_run_array(result, key)
+    part = result['run_cyber_dojo_sh']
+    part[key].each do |filename,file|
+      part[key][filename]['content'] = part[key][filename]['content'].lines
     end
   end
+
+  # - - - - - - - - - - - - - - - - - - -
+
+  def split_diagnostic(result, key)
+    d = result['diagnostic']
+    unless d.nil?
+      d[key] = d[key].lines
+    end
+  end
+
+  # - - - - - - - - - - - - - - - - - - -
 
   def files_from(manifest)
     manifest['visible_files'].each_with_object({}) do |(filename, file),files|
@@ -51,21 +75,19 @@ class Hiker
     end
   end
 
+  # - - - - - - - - - - - - - - - - - - -
+
   def traffic_light(image_name, id, files)
-    result = runner.run_cyber_dojo_sh(image_name, id, files, max_seconds=10)
-    stdout = result['stdout']['content']
-    stderr = result['stderr']['content']
-    status = result['status']
-    ragger.colour(image_name, id, stdout, stderr, status)
+    runner.run_cyber_dojo_sh(image_name, id, files, max_seconds=10)
   end
+
+  # - - - - - - - - - - - - - - - - - - -
 
   def languages_start_points
     @external.languages_start_points
   end
 
-  def ragger
-    @external.ragger
-  end
+  # - - - - - - - - - - - - - - - - - - -
 
   def runner
     @external.runner

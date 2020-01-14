@@ -4,8 +4,8 @@ require_relative 'http_json/response_unpacker'
 class RunnerService
 
   def initialize(external)
-    requester = HttpJson::RequestPacker.new(external, 'runner', 4597)
-    @http = HttpJson::ResponseUnpacker.new(requester)
+    requester = HttpJson::RequestPacker.new(external, 'traffic-light-runner', 4597)
+    @http = HttpJson::ResponseUnpacker.new(requester, { raw:true })
   end
 
   def run_cyber_dojo_sh(image_name, id, files, max_seconds)

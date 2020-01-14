@@ -33,7 +33,6 @@ services:
     restart: 'no'
     depends_on:
       - runner
-      - ragger
       - languages-start-points
     #volumes: [ "./test_server:/app/test:ro" ]
 
@@ -49,18 +48,6 @@ services:
     read_only: true
     tmpfs: /tmp
     restart: 'no'
-
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ragger:
-    user: nobody
-    image: ${CYBER_DOJO_RAGGER_IMAGE}:${CYBER_DOJO_RAGGER_TAG}
-    init: true
-    container_name: test-traffic-light-ragger
-    ports: [ "${CYBER_DOJO_RAGGER_PORT}:${CYBER_DOJO_RAGGER_PORT}" ]
-    read_only: true
-    tmpfs: /tmp
-    restart: 'no'
-    depends_on: [ runner ]
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   languages-start-points:

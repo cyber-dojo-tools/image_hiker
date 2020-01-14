@@ -20,10 +20,8 @@ readonly SRC_DIR=${2:-${PWD}}
 # $ ./check_red_amber_green.sh jj1 ../java-junit
 # Creating network hiker
 # Creating traffic-light-languages service
-# Creating traffic-light-ragger service
 # Creating traffic-light-runner service
 # Waiting until traffic-light-languages is ready.OK
-# Waiting until traffic-light-ragger is ready.....OK
 # Waiting until traffic-light-runner is ready.OK
 # {"colour"=>"red"}
 # {"colour"=>"amber"}
@@ -95,7 +93,6 @@ trap_handler()
 {
   remove_languages
   remove_runner
-  remove_ragger
   remove_docker_network
 }
 
@@ -195,37 +192,6 @@ start_runner()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - -
-ragger_name()
-{
-  echo traffic-light-ragger
-}
-
-remove_ragger()
-{
-  docker rm --force $(ragger_name) > /dev/null || true
-}
-
-start_ragger()
-{
-  local -r image="${CYBER_DOJO_RAGGER_IMAGE}:${CYBER_DOJO_RAGGER_TAG}"
-  local -r port="${CYBER_DOJO_RAGGER_PORT}"
-  echo "Creating $(ragger_name) service"
-  local -r cid=$(docker run \
-    --detach \
-    --env NO_PROMETHEUS \
-    --init \
-    --name $(ragger_name) \
-    --network $(network_name) \
-    --network-alias ragger \
-    --publish "${port}:${port}" \
-    --read-only \
-    --restart no \
-    --tmpfs /tmp \
-    --user nobody \
-      "${image}")
-}
-
-# - - - - - - - - - - - - - - - - - - - - - - -
 traffic_light_name()
 {
   echo traffic-light
@@ -255,11 +221,9 @@ export $(versioner_env_vars)
 create_docker_network
 
 start_languages
-start_ragger
 start_runner
 
 wait_until_ready languages "${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}"
-wait_until_ready ragger    "${CYBER_DOJO_RAGGER_PORT}"
 wait_until_ready runner    "${CYBER_DOJO_RUNNER_PORT}"
 
 run_traffic_light red

@@ -4,7 +4,7 @@ require_relative 'http_json/response_unpacker'
 class LanguagesStartPointsService
 
   def initialize(external)
-    requester = HttpJson::RequestPacker.new(external, 'languages-start-points', 4524)
+    requester = HttpJson::RequestPacker.new(external, 'traffic-light-languages', 4524)
     @http = HttpJson::ResponseUnpacker.new(requester)
   end
 
