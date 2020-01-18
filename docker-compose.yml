@@ -32,7 +32,6 @@ services:
     restart: 'no'
     depends_on:
       - runner
-      - languages-start-points
     #volumes: [ "./test_server:/app/test:ro" ]
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,15 +45,4 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     read_only: true
     tmpfs: /tmp
-    restart: 'no'
-
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  languages-start-points:
-    user: nobody
-    image: ${CYBER_DOJO_LANGUAGES_START_POINTS_IMAGE}:${CYBER_DOJO_LANGUAGES_START_POINTS_TAG}
-    init: true
-    container_name: test-traffic-light-languages-start-points
-    ports: [ "${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}:${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}" ]
-    read_only: true
-    tmpfs: /tmpfs
     restart: 'no'

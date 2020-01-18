@@ -99,5 +99,4 @@ echo_docker_log()
 }
 
 # - - - - - - - - - - - - - - - - - - - - - -
-up_and_wait_until_ready runner                 ${CYBER_DOJO_RUNNER_PORT}
-up_and_wait_until_ready languages-start-points ${CYBER_DOJO_LANGUAGES_START_POINTS_PORT}
+up_and_wait_until_ready runner ${CYBER_DOJO_RUNNER_PORT}
