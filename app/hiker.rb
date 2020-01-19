@@ -10,62 +10,75 @@ class Hiker
   # - - - - - - - - - - - - - - - - - - -
 
   def hike(colour)
-    base_dir, image_name, files = base_dir_image_name_files
-    id = '34de2W'
-    filename,from,to = hiker_substitutions(base_dir, files, colour)
+    image_name = manifest['image_name']
+    id = '999999'
+    files = Hash[
+      manifest['visible_filenames'].map { |filename|
+        [ filename, IO.read("#{base_dir}/#{filename}") ]
+      }
+    ]
+    filename,from,to = hiker_substitutions(files, colour)
     files[filename].sub!(from, to)
-    result = traffic_light(image_name, id, files)
-
-    if result['colour'] === colour
-      puts "Testing #{colour} PASSED"
+    $stdout.print "Testing #{colour}..."
+    $stdout.flush
+    actual = traffic_light(image_name, id, files)
+    if actual === colour
+      puts 'PASSED'
       exit(0)
     else
+      puts 'FAILED'
       split_run(result, 'stdout')
       split_run(result, 'stderr')
       split_run_array(result, 'created')
       split_run_array(result, 'changed')
       puts JSON.pretty_generate(result)
-      puts "Testing #{colour} FAILED"
       exit(42)
     end
   end
 
   private
 
-  def base_dir_image_name_files
-    src_dir = ENV['SRC_DIR']
-    pattern = "#{src_dir}/**/manifest.json"
-    manifest_filename = Dir.glob(pattern)[0]
-    manifest = JSON.parse!(IO.read(manifest_filename))
-    base_dir = File.dirname(manifest_filename)
-    image_name = manifest['image_name']
-    files = Hash[manifest['visible_filenames'].map { |filename|
-        [ filename,
-          IO.read("#{base_dir}/#{filename}")
-        ]
-      }
-    ]
-    [ base_dir, image_name, files ]
+  def hiker_substitutions(files, colour)
+    if options?
+      puts "Using #{options_filename}"
+      json = JSON.parse!(IO.read(options_filename))[colour]
+      [ json['filename'], json['from'], json['to'] ]
+    else
+      filename = files.keys.find{|filename| files[filename].include?('6 * 9')}
+      if filename.nil?
+        puts "ERROR: none of the manifest['visible_files'] include the"
+        puts "       string '6 * 9' and there is no 'options.json' file."
+        exit(42)
+      end
+      [ filename, '6 * 9', TEXT_SUB[colour] ]
+    end
+  end
+
+  def options?
+    File.file?(options_filename)
+  end
+
+  def options_filename
+    "#{base_dir}/options.json"
   end
 
   # - - - - - - - - - - - - - - - - - - -
 
-  def hiker_substitutions(base_dir, files, colour)
-    options_filename = "#{base_dir}/options.json"
-    if File.file?(options_filename)
-      json = JSON.parse!(IO.read(options_filename))[colour]
-      [ json['filename'], json['from'], json['to'] ]
-    else
-      filename = files.find{|_file,content| content.include?('6 * 9')}[0]
-      [ filename, '6 * 9', TEXT_SUB[colour] ]
-    end
+  def base_dir
+    "#{ENV['SRC_DIR']}/start_point"
+  end
+
+  # - - - - - - - - - - - - - - - - - - -
+
+  def manifest
+    @manifest ||= JSON.parse!(IO.read("#{base_dir}/manifest.json"))
   end
 
   # - - - - - - - - - - - - - - - - - - -
 
   TEXT_SUB = {
     'red'   => '6 * 9',
-    'amber' => '6 * 9sdsd',
+    'amber' => '6 * 9sd',
     'green' => '6 * 7'
   }
 
@@ -96,7 +109,8 @@ class Hiker
   # - - - - - - - - - - - - - - - - - - -
 
   def traffic_light(image_name, id, files)
-    runner.run_cyber_dojo_sh(image_name, id, files, max_seconds=10)
+    result = runner.run_cyber_dojo_sh(image_name, id, files, max_seconds=10)
+    result['timed_out'] || result['colour']
   end
 
   # - - - - - - - - - - - - - - - - - - -
@@ -111,4 +125,5 @@ end
 require_relative 'external'
 external = External.new
 hiker = Hiker.new(external)
-hiker.hike(ARGV[0])
+colour = ARGV[0]
+hiker.hike(colour)
