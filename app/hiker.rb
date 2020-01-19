@@ -10,6 +10,7 @@ class Hiker
   # - - - - - - - - - - - - - - - - - - -
 
   def hike(colour)
+    # TODO: exit(42) unless %w( red amber green ).include?(colour)
     image_name = manifest['image_name']
     id = '999999'
     files = Hash[
@@ -19,7 +20,10 @@ class Hiker
     ]
     filename,from,to = hiker_substitutions(files, colour)
     files[filename].sub!(from, to)
-    $stdout.print "Testing #{colour}..."
+    $stdout.print("Testing #{colour.rjust(5)}: #{filename} '#{from}' ")
+    unless from === to
+      $stdout.print("=> '#{to}' ")
+    end
     $stdout.flush
     actual = traffic_light(image_name, id, files)
     if actual === colour
@@ -44,6 +48,7 @@ class Hiker
       json = JSON.parse!(IO.read(options_filename))[colour]
       [ json['filename'], json['from'], json['to'] ]
     else
+      # '6 * 9' could match '6 * 99'... tighten with a more precise regex?
       filename = files.keys.find{|filename| files[filename].include?('6 * 9')}
       if filename.nil?
         puts "ERROR: none of the manifest['visible_files'] include the"
