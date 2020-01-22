@@ -20,12 +20,10 @@ class Hiker
     ]
     filename,from,to = hiker_substitutions(files, colour)
     files[filename].sub!(from, to)
-    $stdout.print("Testing #{colour.rjust(5)}: #{filename} '#{from}' ")
-    unless from === to
-      $stdout.print("=> '#{to}' ")
-    end
+    $stdout.print("Testing #{colour.rjust(5)}: #{filename} '#{from}' => '#{to}' ")
     $stdout.flush
-    actual = traffic_light(image_name, id, files)
+    result = traffic_light(image_name, id, files)
+    actual = result['timed_out'] || result['colour']  
     if actual === colour
       puts 'PASSED'
       exit(0)
@@ -48,7 +46,7 @@ class Hiker
       json = JSON.parse!(IO.read(options_filename))[colour]
       [ json['filename'], json['from'], json['to'] ]
     else
-      # '6 * 9' could match '6 * 99'... tighten with a more precise regex?
+      # TODO: '6 * 9' could match '6 * 99'... tighten with a more precise regex?
       filename = files.keys.find{|filename| files[filename].include?('6 * 9')}
       if filename.nil?
         puts "ERROR: none of the manifest['visible_files'] include the"
@@ -114,8 +112,7 @@ class Hiker
   # - - - - - - - - - - - - - - - - - - -
 
   def traffic_light(image_name, id, files)
-    result = runner.run_cyber_dojo_sh(image_name, id, files, max_seconds=10)
-    result['timed_out'] || result['colour']
+    runner.run_cyber_dojo_sh(image_name, id, files, max_seconds=10)
   end
 
   # - - - - - - - - - - - - - - - - - - -
