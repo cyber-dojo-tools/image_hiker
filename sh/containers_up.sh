@@ -83,7 +83,7 @@ show_warnings()
   local -r count="$(echo "${stripped}" | grep --count "^")"
   if [ "${count}" != '0' ]; then
     echo "${count} warnings...."
-    #echo "${stripped}"
+    echo "${stripped}"
   fi
 }
 
