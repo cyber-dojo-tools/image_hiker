@@ -13,34 +13,39 @@ class Hiker
     # TODO: exit(42) unless %w( red amber green ).include?(colour)
     image_name = manifest['image_name']
     id = '999999'
-    files = Hash[
-      manifest['visible_filenames'].map { |filename|
-        [ filename, IO.read("#{base_dir}/#{filename}") ]
-      }
-    ]
-    filename,from,to = hiker_substitutions(files, colour)
+    files = Hash[manifest['visible_filenames'].map { |filename|
+      [ filename, IO.read("#{base_dir}/#{filename}") ]
+    }]
+    filename,from,to = hiker_6x9_substitutions(files, colour)
     files[filename].sub!(from, to)
-    $stdout.print("Testing #{colour.rjust(5)}: #{filename} '#{from}' => '#{to}' ")
-    $stdout.flush
-    result = traffic_light(image_name, id, files)
-    actual = result['timed_out'] || result['colour']  
-    if actual === colour
-      puts 'PASSED'
-      exit(0)
+    result = run_cyber_dojo_sh(image_name, id, files)
+    actual = result['run_cyber_dojo_sh']['timed_out'] || result['colour']
+    puts('==============================================================')
+    pf = (actual === colour) ? 'PASSED' : 'FAILED'
+    puts("#{pf} #{colour.rjust(5)}: #{filename} '#{from}' => '#{to}'")
+    if pf
+      created = result['run_cyber_dojo_sh']['created']
+      filenames = created.keys.sort
+      puts "created filenames: #{filenames}"
+      regs = (manifest['hidden_filenames'] || ['']).map{|s| Regexp.new(s) }
+      hidden = filenames.select{|filename| regs.any?{|reg| reg =~ filename }}
+      puts "hidden_filenames: #{hidden}"
+      puts "-->reach browser: #{filenames - hidden}"
     else
-      puts 'FAILED'
       split_run(result, 'stdout')
       split_run(result, 'stderr')
       split_run_array(result, 'created')
       split_run_array(result, 'changed')
       puts JSON.pretty_generate(result)
-      exit(42)
     end
+    puts('==============================================================')
+    puts
+    exit pf ? 0 : 42
   end
 
   private
 
-  def hiker_substitutions(files, colour)
+  def hiker_6x9_substitutions(files, colour)
     if options?
       puts "Using #{options_filename}"
       json = JSON.parse!(IO.read(options_filename))[colour]
@@ -111,7 +116,7 @@ class Hiker
 
   # - - - - - - - - - - - - - - - - - - -
 
-  def traffic_light(image_name, id, files)
+  def run_cyber_dojo_sh(image_name, id, files)
     runner.run_cyber_dojo_sh(image_name, id, files, max_seconds=10)
   end
 
