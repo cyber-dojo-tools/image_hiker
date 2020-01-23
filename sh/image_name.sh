@@ -2,5 +2,5 @@
 
 image_name()
 {
-  echo cyberdojotools/image_hiker
+  echo cyberdojofoundation/image_hiker
 }

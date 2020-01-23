@@ -23,7 +23,7 @@ services:
     build:
       context: app
     user: nobody
-    image: cyberdojotools/image_hiker
+    image: cyberdojofoundation/image_hiker
     init: true
     container_name: test-hiker-server
     read_only: true
