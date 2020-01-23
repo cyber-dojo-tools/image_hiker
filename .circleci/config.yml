@@ -14,6 +14,7 @@ workflows:
   build-publish-deploy:
     jobs:
       - build-publish:
+          context: cyberdojo-tools-context        
           filters:
             branches:
               only: [ master ]
