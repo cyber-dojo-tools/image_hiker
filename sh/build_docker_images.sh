@@ -1,13 +1,15 @@
-#!/bin/bash -Ee
+#!/bin/bash -Eeu
 
-readonly ROOT_DIR="$( cd "$( dirname "${0}" )" && cd .. && pwd )"
+readonly ROOT_DIR="$( cd "$( dirname "${0}" )/.." && pwd )"
 
-export SHA=$(cd "${ROOT_DIR}" && git rev-parse HEAD)
+# - - - - - - - - - - - - - - - - - - - - - - -
+build_docker_images()
+{
+  docker-compose \
+    --file "${ROOT_DIR}/docker-compose.yml" \
+    build \
+    hiker
+}
 
-source "${ROOT_DIR}/sh/versioner_env_vars.sh"
-export $(versioner_env_vars)
-
-docker-compose \
-  --file "${ROOT_DIR}/docker-compose.yml" \
-  build \
-  hiker
+# - - - - - - - - - - - - - - - - - - - - - - -
+build_docker_images

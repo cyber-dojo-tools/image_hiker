@@ -6,16 +6,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build and test
-          command: |
-            set -e
-            ./pipe_build_up_test.sh
-      - run:
-          name: Publish on dockerhub
-          command: |
-            set -e
-            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-            docker push cyberdojofoundation/image_hiker:latest
+          name: Build, test, publish
+          command: ./pipe_build_up_test.sh
 
 workflows:
   version: 2
