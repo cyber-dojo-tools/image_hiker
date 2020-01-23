@@ -22,7 +22,7 @@ up_and_wait_until_ready()
   local -r service="${1}"                        # eg runner
   local -r port="${2}"                           # eg 4597
   local -r name="test-traffic-light-${service}"  # eg test-traffic-light-runner
-  local -r max_tries=20
+  local -r max_tries=30
 
   docker-compose \
     --file "${ROOT_DIR}/docker-compose.yml" \
