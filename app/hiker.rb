@@ -37,7 +37,6 @@ class Hiker
       hidden = filenames.select{|filename| regs.any?{|reg| reg =~ filename }}
       info['hidden_filenames'] = hidden
       info['reach_browser'] = filenames - hidden
-      puts JSON.pretty_generate(info)
     else
       split_run(result, 'stdout')
       split_run(result, 'stderr')
