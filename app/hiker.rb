@@ -49,7 +49,7 @@ class Hiker
     puts JSON.pretty_generate(info)
     puts("#{outcome}:TRAFFIC_LIGHT:#{colour}:==================================")
     puts
-    exit pf ? 0 : 42
+    exit outcome==='PASSED' ? 0 : 42
   end
 
   private
