@@ -18,12 +18,15 @@ class Hiker
     }]
     filename,from,to = hiker_6x9_substitutions(files, colour)
     files[filename].sub!(from, to)
+    t1 = Time.now
     result = run_cyber_dojo_sh(image_name, id, files)
+    t2 = Time.now
     actual = result['run_cyber_dojo_sh']['timed_out'] || result['colour']
     puts('==============================================================')
     pf = (actual === colour) ? 'PASSED' : 'FAILED'
     puts("#{pf} #{colour.rjust(5)}: #{filename} '#{from}' => '#{to}'")
     if pf
+      puts "took: #{t2-t1} seconds"
       created = result['run_cyber_dojo_sh']['created']
       filenames = created.keys.sort
       puts "created filenames: #{filenames}"
