@@ -22,26 +22,32 @@ class Hiker
     result = run_cyber_dojo_sh(image_name, id, files)
     t2 = Time.now
     actual = result['run_cyber_dojo_sh']['timed_out'] || result['colour']
-    puts('==============================================================')
-    pf = (actual === colour) ? 'PASSED' : 'FAILED'
-    puts("#{pf} #{colour.rjust(5)}: #{filename} '#{from}' => '#{to}'")
-    if pf
-      puts "took: #{t2-t1} seconds"
+    outcome = (actual === colour) ? 'PASSED' : 'FAILED'
+    info = {
+        'filename' => filename,
+        'from' => from,
+        'to' => to,
+        'duration' => (t2 - t1)
+    }
+    if outcome === 'PASSED'
       created = result['run_cyber_dojo_sh']['created']
       filenames = created.keys.sort
-      puts "created filenames: #{filenames}"
+      info['created_filenames'] = filenames
       regs = (manifest['hidden_filenames'] || ['']).map{|s| Regexp.new(s) }
       hidden = filenames.select{|filename| regs.any?{|reg| reg =~ filename }}
-      puts "hidden_filenames: #{hidden}"
-      puts "-->reach browser: #{filenames - hidden}"
+      info['hidden_filenames'] = hidden
+      info['reach_browser'] = filenames - hidden
+      puts JSON.pretty_generate(info)
     else
       split_run(result, 'stdout')
       split_run(result, 'stderr')
       split_run_array(result, 'created')
       split_run_array(result, 'changed')
-      puts JSON.pretty_generate(result)
+      info['result'] = result
     end
-    puts('==============================================================')
+    puts("#{outcome}:TRAFFIC_LIGHT:#{colour}:==================================")
+    puts JSON.pretty_generate(info)
+    puts("#{outcome}:TRAFFIC_LIGHT:#{colour}:==================================")
     puts
     exit pf ? 0 : 42
   end
