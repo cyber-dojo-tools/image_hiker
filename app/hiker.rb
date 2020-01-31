@@ -33,7 +33,7 @@ class Hiker
       created = result['run_cyber_dojo_sh']['created']
       filenames = created.keys.sort
       info['created_filenames'] = filenames
-      regs = (manifest['hidden_filenames'] || ['']).map{|s| Regexp.new(s) }
+      regs = (manifest['hidden_filenames'] || []).map{|s| Regexp.new(s) }
       hidden = filenames.select{|filename| regs.any?{|reg| reg =~ filename }}
       info['hidden_filenames'] = hidden
       info['reach_browser'] = filenames - hidden
