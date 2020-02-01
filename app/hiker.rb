@@ -24,29 +24,27 @@ class Hiker
     actual = result['run_cyber_dojo_sh']['timed_out'] || result['colour']
     outcome = (actual === colour) ? 'PASSED' : 'FAILED'
     info = {
-        'filename' => filename,
-        'from' => from,
-        'to' => to,
-        'duration' => (t2 - t1)
+      'filename' => filename,
+      'from' => from,
+      'to' => to,
+      'duration' => (t2 - t1)
     }
-    if outcome === 'PASSED'
-      created = result['run_cyber_dojo_sh']['created']
-      filenames = created.keys.sort
-      info['created_filenames'] = filenames
-      regs = (manifest['hidden_filenames'] || []).map{|s| Regexp.new(s) }
-      hidden = filenames.select{|filename| regs.any?{|reg| reg =~ filename }}
-      info['hidden_filenames'] = hidden
-      info['reach_browser'] = filenames - hidden
-    else
-      split_run(result, 'stdout')
-      split_run(result, 'stderr')
-      split_run_array(result, 'created')
-      split_run_array(result, 'changed')
-      info['result'] = result
-    end
-    puts("#{outcome}:TRAFFIC_LIGHT:#{colour}:==================================")
+    created = result['run_cyber_dojo_sh']['created']
+    filenames = created.keys.sort
+    info['created_filenames'] = filenames
+    regs = (manifest['hidden_filenames'] || []).map{|s| Regexp.new(s) }
+    hidden = filenames.select{|filename| regs.any?{|reg| reg =~ filename }}
+    info['hidden_filenames'] = hidden
+    info['reach_browser'] = filenames - hidden
+    split_run(result, 'stdout')
+    split_run(result, 'stderr')
+    split_run_array(result, 'created')
+    split_run_array(result, 'changed')
+    split(result, 'rag_src')
+    info['result'] = result
     puts JSON.pretty_generate(info)
     puts
+    puts("#{outcome}:TRAFFIC_LIGHT:#{colour}:==================================")
     exit outcome==='PASSED' ? 0 : 42
   end
 
@@ -96,6 +94,14 @@ class Hiker
     'amber' => '6 * 9sd',
     'green' => '6 * 7'
   }
+
+  # - - - - - - - - - - - - - - - - - - -
+
+  def split(result, key)
+    unless result['rag_src'].nil?
+      result['rag_src'] = result['rag_src'].lines
+    end
+  end
 
   # - - - - - - - - - - - - - - - - - - -
 
