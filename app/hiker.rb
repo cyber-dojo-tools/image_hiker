@@ -18,12 +18,14 @@ class Hiker
     }]
     filename,from,to = hiker_6x9_substitutions(files, colour)
     files[filename].sub!(from, to)
+    max_seconds = manifest['max_seconds'].to_i
     t1 = Time.now
-    result = run_cyber_dojo_sh(image_name, id, files)
+    result = run_cyber_dojo_sh(image_name, id, files, max_seconds)
     t2 = Time.now
     actual = result['run_cyber_dojo_sh']['timed_out'] || result['colour']
     outcome = (actual === colour) ? 'PASSED' : 'FAILED'
     info = {
+      'max_seconds' => max_seconds,
       'filename' => filename,
       'from' => from,
       'to' => to,
@@ -129,8 +131,8 @@ class Hiker
 
   # - - - - - - - - - - - - - - - - - - -
 
-  def run_cyber_dojo_sh(image_name, id, files)
-    runner.run_cyber_dojo_sh(image_name, id, files, max_seconds=10)
+  def run_cyber_dojo_sh(image_name, id, files, max_seconds)
+    runner.run_cyber_dojo_sh(image_name, id, files, max_seconds)
   end
 
   # - - - - - - - - - - - - - - - - - - -
