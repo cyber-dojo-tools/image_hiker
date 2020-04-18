@@ -18,7 +18,7 @@ class Hiker
     }]
     filename,from,to = hiker_6x9_substitutions(files, colour)
     files[filename].sub!(from, to)
-    max_seconds = manifest['max_seconds'].to_i
+    max_seconds = manifest['max_seconds'] || 10
     t1 = Time.now
     result = run_cyber_dojo_sh(image_name, id, files, max_seconds)
     t2 = Time.now
