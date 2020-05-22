@@ -20,9 +20,10 @@ class Hiker
     files[filename].sub!(from, to)
     max_seconds = manifest['max_seconds'] || 10
     t1 = Time.now
-    result = run_cyber_dojo_sh(image_name, id, files, max_seconds)
+    r = run_cyber_dojo_sh(image_name, id, files, max_seconds)
     t2 = Time.now
-    actual = result['run_cyber_dojo_sh']['timed_out'] || result['colour']
+    result = r['run_cyber_dojo_sh']
+    actual = result['timed_out'] || result['colour']
     outcome = (actual === colour) ? 'PASSED' : 'FAILED'
     info = {
       'max_seconds' => max_seconds,
@@ -31,7 +32,7 @@ class Hiker
       'to' => to,
       'duration' => (t2 - t1)
     }
-    created = result['run_cyber_dojo_sh']['created']
+    created = result['created']
     filenames = created.keys.sort
     info['created_filenames'] = filenames
     regs = (manifest['hidden_filenames'] || []).map{|s| Regexp.new(s) }
@@ -42,7 +43,6 @@ class Hiker
     split_run(result, 'stderr')
     split_run_array(result, 'created')
     split_run_array(result, 'changed')
-    split(result, 'rag_src')
     info['result'] = result
     puts JSON.pretty_generate(info)
     puts
@@ -99,25 +99,15 @@ class Hiker
 
   # - - - - - - - - - - - - - - - - - - -
 
-  def split(result, key)
-    unless result['rag_src'].nil?
-      result['rag_src'] = result['rag_src'].lines
-    end
-  end
-
-  # - - - - - - - - - - - - - - - - - - -
-
   def split_run(result, key)
-    part = result['run_cyber_dojo_sh']
-    part[key]['content'] = part[key]['content'].lines
+    result[key]['content'] = result[key]['content'].lines
   end
 
   # - - - - - - - - - - - - - - - - - - -
 
   def split_run_array(result, key)
-    part = result['run_cyber_dojo_sh']
-    part[key].each do |filename,file|
-      part[key][filename]['content'] = part[key][filename]['content'].lines
+    result[key].each do |filename,file|
+      result[key][filename]['content'] = result[key][filename]['content'].lines
     end
   end
 
