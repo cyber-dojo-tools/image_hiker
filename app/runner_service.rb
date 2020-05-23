@@ -8,6 +8,10 @@ class RunnerService
     @http = HttpJson::ResponseUnpacker.new(requester, { raw:true })
   end
 
+  def sha
+    @http.get(__method__, {})
+  end
+
   def run_cyber_dojo_sh(id, files, manifest)
     @http.get(__method__, {
       id:id,

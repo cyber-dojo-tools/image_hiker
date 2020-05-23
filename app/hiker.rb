@@ -10,7 +10,7 @@ class Hiker
   # - - - - - - - - - - - - - - - - - - -
 
   def hike(colour)
-    files = manifest.delete('visible_filenames').map.with_object({}) do |filename,memo|
+    files = manifest['visible_filenames'].map.with_object({}) do |filename,memo|
       memo[filename] = IO.read("#{base_dir}/#{filename}")
     end
     filename,from,to = hiker_6x9_substitutions(files, colour)
@@ -21,29 +21,22 @@ class Hiker
     t2 = Time.now
     result = r['run_cyber_dojo_sh']
 
-    actual = result['colour']
-    outcome = (actual === colour) ? 'PASSED' : 'FAILED'
+    split_run(result, 'stdout')
+    split_run(result, 'stderr')
+    split_run_array(result, 'created')
+    split_run_array(result, 'changed')
+    puts JSON.pretty_generate(result)
 
-    info = {
+    puts JSON.pretty_generate(
+      'runner_sha' => runner.sha['sha'],
       'max_seconds' => manifest['max_seconds'],
       'filename' => filename,
       'from' => from,
       'to' => to,
       'duration' => (t2 - t1)
-    }
-    info['hidden_filenames'] = manifest['hidden_filenames']
-    created = result['created']
-    filenames = created.keys.sort
-    info['created_filenames'] = filenames
-    regs = (manifest['hidden_filenames'] || []).map{|s| Regexp.new(s) }
-    hidden = filenames.select{|filename| regs.any?{|reg| reg =~ filename }}
-    info['reach_browser'] = filenames - hidden
-    split_run(result, 'stdout')
-    split_run(result, 'stderr')
-    split_run_array(result, 'created')
-    split_run_array(result, 'changed')
-    info['result'] = result
-    puts JSON.pretty_generate(info)
+    )
+
+    outcome = (result['colour'] === colour) ? 'PASSED' : 'FAILED'
     puts
     puts("#{outcome}:TRAFFIC_LIGHT:#{colour}:==================================")
     exit (outcome === 'PASSED') ? 0 : 42
