@@ -23,6 +23,7 @@ class Hiker
 
     actual = result['colour']
     outcome = (actual === colour) ? 'PASSED' : 'FAILED'
+
     info = {
       'max_seconds' => manifest['max_seconds'],
       'filename' => filename,
@@ -30,12 +31,12 @@ class Hiker
       'to' => to,
       'duration' => (t2 - t1)
     }
+    info['hidden_filenames'] = manifest['hidden_filenames']
     created = result['created']
     filenames = created.keys.sort
     info['created_filenames'] = filenames
     regs = (manifest['hidden_filenames'] || []).map{|s| Regexp.new(s) }
     hidden = filenames.select{|filename| regs.any?{|reg| reg =~ filename }}
-    info['hidden_filenames'] = hidden
     info['reach_browser'] = filenames - hidden
     split_run(result, 'stdout')
     split_run(result, 'stderr')
