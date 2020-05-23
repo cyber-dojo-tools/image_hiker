@@ -10,23 +10,21 @@ class Hiker
   # - - - - - - - - - - - - - - - - - - -
 
   def hike(colour)
-    # TODO: exit(42) unless %w( red amber green ).include?(colour)
-    image_name = manifest['image_name']
-    id = '999999'
-    files = Hash[manifest['visible_filenames'].map { |filename|
-      [ filename, IO.read("#{base_dir}/#{filename}") ]
-    }]
+    files = manifest.delete('visible_filenames').map.with_object({}) do |filename,memo|
+      memo[filename] = IO.read("#{base_dir}/#{filename}")
+    end
     filename,from,to = hiker_6x9_substitutions(files, colour)
     files[filename].sub!(from, to)
-    max_seconds = manifest['max_seconds'] || 10
+
     t1 = Time.now
-    r = run_cyber_dojo_sh(image_name, id, files, max_seconds)
+    r = run_cyber_dojo_sh(id='999999', files, manifest)
     t2 = Time.now
     result = r['run_cyber_dojo_sh']
-    actual = result['timed_out'] || result['colour']
+
+    actual = result['colour']
     outcome = (actual === colour) ? 'PASSED' : 'FAILED'
     info = {
-      'max_seconds' => max_seconds,
+      'max_seconds' => manifest['max_seconds'],
       'filename' => filename,
       'from' => from,
       'to' => to,
@@ -47,7 +45,7 @@ class Hiker
     puts JSON.pretty_generate(info)
     puts
     puts("#{outcome}:TRAFFIC_LIGHT:#{colour}:==================================")
-    exit outcome==='PASSED' ? 0 : 42
+    exit (outcome === 'PASSED') ? 0 : 42
   end
 
   private
@@ -86,7 +84,11 @@ class Hiker
   # - - - - - - - - - - - - - - - - - - -
 
   def manifest
-    @manifest ||= JSON.parse!(IO.read("#{base_dir}/manifest.json"))
+    @manifest ||= begin
+      json = JSON.parse!(IO.read("#{base_dir}/manifest.json"))
+      json['max_seconds'] ||= 10
+      json
+    end
   end
 
   # - - - - - - - - - - - - - - - - - - -
@@ -121,8 +123,8 @@ class Hiker
 
   # - - - - - - - - - - - - - - - - - - -
 
-  def run_cyber_dojo_sh(image_name, id, files, max_seconds)
-    runner.run_cyber_dojo_sh(image_name, id, files, max_seconds)
+  def run_cyber_dojo_sh(id, files, manifest)
+    runner.run_cyber_dojo_sh(id, files, manifest)
   end
 
   # - - - - - - - - - - - - - - - - - - -
