@@ -5,7 +5,7 @@ class RunnerService
 
   def initialize(external)
     requester = HttpJson::RequestPacker.new(external, 'traffic-light-runner', 4597)
-    @http = HttpJson::ResponseUnpacker.new(requester, { raw:true })
+    @http = HttpJson::ResponseUnpacker.new(requester)
   end
 
   def sha

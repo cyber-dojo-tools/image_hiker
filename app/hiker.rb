@@ -10,16 +10,16 @@ class Hiker
   # - - - - - - - - - - - - - - - - - - -
 
   def hike(colour)
-    files = manifest['visible_filenames'].map.with_object({}) do |filename,memo|
-      memo[filename] = IO.read("#{base_dir}/#{filename}")
+    raw = manifest['visible_files']
+    files = raw.map.with_object({}) do |(filename,file),memo|
+      memo[filename] = file['content']
     end
     filename,from,to = hiker_6x9_substitutions(files, colour)
     files[filename].sub!(from, to)
 
     t1 = Time.now
-    r = run_cyber_dojo_sh(id='999999', files, manifest)
+    result = run_cyber_dojo_sh(id='999999', files, manifest)
     t2 = Time.now
-    result = r['run_cyber_dojo_sh']
 
     split_run(result, 'stdout')
     split_run(result, 'stderr')
@@ -79,9 +79,10 @@ class Hiker
 
   def manifest
     @manifest ||= begin
-      json = JSON.parse!(IO.read("#{base_dir}/manifest.json"))
-      json['max_seconds'] ||= 10
-      json
+      name = languages.manifests['manifests'].keys[0]
+      manifest = languages.manifest(name)['manifest']
+      manifest['max_seconds'] ||= 10
+      manifest
     end
   end
 
@@ -109,19 +110,15 @@ class Hiker
 
   # - - - - - - - - - - - - - - - - - - -
 
-  def files_from(manifest)
-    manifest['visible_files'].each_with_object({}) do |(filename, file),files|
-      files[filename] = file['content']
-    end
-  end
-
-  # - - - - - - - - - - - - - - - - - - -
-
   def run_cyber_dojo_sh(id, files, manifest)
     runner.run_cyber_dojo_sh(id, files, manifest)
   end
 
   # - - - - - - - - - - - - - - - - - - -
+
+  def languages
+    @external.languages
+  end
 
   def runner
     @external.runner
