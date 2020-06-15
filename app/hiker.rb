@@ -27,18 +27,19 @@ class Hiker
     split_run_array(result, 'changed')
     puts JSON.pretty_generate(result)
 
+    puts "\n"
+    outcome = (result['colour'] === colour) ? 'PASSED' : 'FAILED'
     puts JSON.pretty_generate(
-      'runner_sha' => runner.sha['sha'],
+      'runner_sha' => runner.sha,
       'max_seconds' => manifest['max_seconds'],
       'filename' => filename,
       'from' => from,
       'to' => to,
-      'duration' => (t2 - t1)
+      'duration' => (t2 - t1),
+      'colour' => colour,
+      'outcome' => outcome
     )
-
-    outcome = (result['colour'] === colour) ? 'PASSED' : 'FAILED'
-    puts
-    puts("#{outcome}:TRAFFIC_LIGHT:#{colour}:==================================")
+    puts "\n"
     exit (outcome === 'PASSED') ? 0 : 42
   end
 
