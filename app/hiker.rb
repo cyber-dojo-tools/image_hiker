@@ -18,17 +18,18 @@ class Hiker
     files[filename].sub!(from, to)
 
     t1 = Time.now
-    result = run_cyber_dojo_sh(id='999999', files, manifest)
+    run_result = run_cyber_dojo_sh(id='999999', files, manifest)
     t2 = Time.now
 
-    split_run(result, 'stdout')
-    split_run(result, 'stderr')
-    split_run_array(result, 'created')
-    split_run_array(result, 'changed')
-    puts JSON.pretty_generate(result)
+    split_run(run_result, 'stdout')
+    split_run(run_result, 'stderr')
+    split_run_array(run_result, 'created')
+    split_run_array(run_result, 'changed')
+    puts JSON.pretty_generate(run_result)
 
     puts "\n"
-    outcome = (result['colour'] === colour) ? 'PASSED' : 'FAILED'
+    actual_colour = run_result['outcome']
+    result = (actual_colour === colour) ? 'PASSED' : 'FAILED'
     puts JSON.pretty_generate(
       'runner_sha' => runner.sha,
       'max_seconds' => manifest['max_seconds'],
@@ -36,11 +37,11 @@ class Hiker
       'from' => from,
       'to' => to,
       'duration' => (t2 - t1),
-      'colour' => colour,
-      'outcome' => outcome
+      'colour' => actual_colour,
+      'result' => result
     )
     puts "\n"
-    exit (outcome === 'PASSED') ? 0 : 42
+    exit (result === 'PASSED') ? 0 : 42
   end
 
   private
