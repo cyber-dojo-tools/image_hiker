@@ -178,6 +178,7 @@ start_runner()
   local -r cid=$(docker run \
      --detach \
      --env NO_PROMETHEUS \
+     --env CYBER_DOJO_RUNNER_PORT=4597 \
      --init \
      --name $(runner_name) \
      --network $(network_name) \
