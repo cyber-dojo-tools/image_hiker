@@ -1,4 +1,5 @@
-#!/bin/bash -Eeu
+#!/usr/bin/env bash
+set -Eeu
 
 readonly SH_DIR="$( cd "$( dirname "${0}" )/sh" && pwd )"
 

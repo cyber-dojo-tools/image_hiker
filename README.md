@@ -1,5 +1,4 @@
-
-[![CircleCI](https://circleci.com/gh/cyber-dojo-languages/image_hiker.svg?style=svg)](https://circleci.com/gh/cyber-dojo-languages/image_hiker)
+[![Github Action (master)](https://github.com/cyber-dojo-tools/image_hiker/actions/workflows/main.yml/badge.svg)](https://github.com/cyber-dojo-tools/image_hiker/actions)
 
 Service that checks a cyber-dojo-language's test-framework's
 start-point files (as defined in its manifest.json file) run as red/amber/green
