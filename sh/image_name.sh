@@ -2,5 +2,5 @@
 
 image_name()
 {
-  echo cyberdojofoundation/image_hiker
+  echo ghcr.io/cyber-dojo-tools/image_hiker
 }

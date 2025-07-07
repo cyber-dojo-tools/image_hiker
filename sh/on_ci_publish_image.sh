@@ -11,10 +11,7 @@ on_ci_publish_tagged_images()
     return
   fi
   echo 'on CI so publishing image'
-  # DOCKER_USERNAME, DOCKER_PASSWORD are in ci context
-  echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
   docker push "$(image_name)"
-  docker logout
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - - -

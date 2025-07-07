@@ -43,6 +43,6 @@ services:
     ports: [ "${CYBER_DOJO_RUNNER_PORT}:${CYBER_DOJO_RUNNER_PORT}" ]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    #read_only: true
+    read_only: false
     tmpfs: /tmp
     restart: 'no'
