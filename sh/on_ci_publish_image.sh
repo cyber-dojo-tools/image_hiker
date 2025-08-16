@@ -11,6 +11,7 @@ on_ci_publish_tagged_images()
     return
   fi
   echo 'on CI so publishing image'
+  echo "${PACKAGES_TOKEN}" | docker login ghcr.io -u "${PACKAGES_USERNAME}" --password-stdin
   docker push "$(image_name)"
 }
 
