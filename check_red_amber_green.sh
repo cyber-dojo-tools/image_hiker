@@ -32,11 +32,7 @@ readonly SRC_DIR=${2:-${PWD}}
 # - - - - - - - - - - - - - - - - - - - - -
 ip_address()
 {
-  if [ -n "${DOCKER_MACHINE_NAME}" ]; then
-    docker-machine ip ${DOCKER_MACHINE_NAME}
-  else
-    echo localhost
-  fi
+  echo localhost
 }
 
 readonly IP_ADDRESS=$(ip_address)
