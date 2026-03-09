@@ -24,12 +24,10 @@ class Hiker
     split_run(run_result, 'stderr')
     split_run_array(run_result, 'created')
     split_run_array(run_result, 'changed')
-    puts JSON.pretty_generate(run_result)
-
-    puts "\n"
+    
     actual_colour = run_result['outcome']
     result = (actual_colour === colour) ? 'PASSED' : 'FAILED'
-    puts JSON.pretty_generate(
+    summary = {
       'runner_sha' => runner.sha,
       'max_seconds' => manifest['max_seconds'],
       'filename' => filename,
@@ -38,7 +36,12 @@ class Hiker
       'duration' => (t2 - t1),
       'colour' => actual_colour,
       'result' => result
-    )
+    }
+
+    puts JSON.pretty_generate({
+      'cyber-dojo.sh': run_result,
+      'summary': summary
+    })
     puts "\n"
     exit (result === 'PASSED') ? 0 : 42
   end
@@ -47,15 +50,14 @@ class Hiker
 
   def hiker_6x9_substitutions(files, colour)
     if options?
-      puts "Using #{options_filename}"
+      # puts "Using #{options_filename}"
       json = JSON.parse!(IO.read(options_filename))[colour]
       [ json['filename'], json['from'], json['to'] ]
     else
-      # TODO: '6 * 9' could match '6 * 99'... tighten with a more precise regex?
       filename = files.keys.find{|filename| files[filename].include?('6 * 9')}
       if filename.nil?
-        puts "ERROR: none of the manifest['visible_files'] include the"
-        puts "       string '6 * 9' and there is no 'options.json' file."
+        STDERR.puts "ERROR: none of the manifest['visible_files'] include the"
+        STDERR.puts "       string '6 * 9' and there is no 'options.json' file."
         exit(42)
       end
       [ filename, '6 * 9', TEXT_SUB[colour] ]
