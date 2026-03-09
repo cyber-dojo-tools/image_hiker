@@ -1,4 +1,4 @@
-FROM cyberdojo/ruby-base
+FROM cyberdojo/sinatra-base
 LABEL maintainer=jon@jaggersoft.com
 
 COPY . /app
