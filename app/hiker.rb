@@ -9,13 +9,38 @@ class Hiker
   # - - - - - - - - - - - - - - - - - - -
 
   def hike(colour)
-    raw = manifest['visible_files']
-    files = raw.map.with_object({}) do |(filename,file),memo|
-      memo[filename] = file['content']
-    end
+    files = visible_files
     filename,from,to = hiker_6x9_substitutions(files, colour)
     files[filename].sub!(from, to)
+    report(files, colour, {
+      'filename' => filename,
+      'from' => from,
+      'to' => to
+    })
+  end
 
+  # - - - - - - - - - - - - - - - - - - -
+
+  # Runs the files of one fixture dir, which holds the source and test files
+  # of a kata a learner has edited into a state the three 6*9 substitutions
+  # cannot express, such as a second test file or a file that will not parse.
+  #
+  # The dir is named for the colour it should reach, so the expectation
+  # travels with the case rather than living in a table that can drift.
+  def hike_fixture(fixture_dir)
+    name = File.basename(fixture_dir)
+    report(fixture_files(fixture_dir), name.split('_').first, {
+      'fixture' => name
+    })
+  end
+
+  private
+
+  # - - - - - - - - - - - - - - - - - - -
+
+  # Runs the files and says whether the colour they reached is the colour
+  # they were expected to reach.
+  def report(files, colour, summary_extras)
     t1 = Time.now
     run_result = run_cyber_dojo_sh(id='999999', files, manifest)
     t2 = Time.now
@@ -24,19 +49,16 @@ class Hiker
     split_run(run_result, 'stderr')
     split_run_array(run_result, 'created')
     split_run_array(run_result, 'changed')
-    
+
     actual_colour = run_result['outcome']
     result = (actual_colour === colour) ? 'PASSED' : 'FAILED'
     summary = {
       'runner_sha' => runner.sha,
       'max_seconds' => manifest['max_seconds'],
-      'filename' => filename,
-      'from' => from,
-      'to' => to,
       'duration' => (t2 - t1),
       'colour' => actual_colour,
       'result' => result
-    }
+    }.merge(summary_extras)
 
     puts JSON.pretty_generate({
       'cyber-dojo.sh': run_result,
@@ -46,7 +68,49 @@ class Hiker
     exit (result === 'PASSED') ? 0 : 42
   end
 
-  private
+  # - - - - - - - - - - - - - - - - - - -
+
+  def visible_files
+    manifest['visible_files'].map.with_object({}) do |(filename,file),memo|
+      memo[filename] = file['content']
+    end
+  end
+
+  # - - - - - - - - - - - - - - - - - - -
+
+  # Echoes the files a kata made from this fixture holds, keyed by the
+  # filename the learner sees, nested dirs included.
+  #
+  # The fixture is authoritative for the source and test files, so a case can
+  # rename one, add one, or leave one out. Every other file the start-point
+  # ships comes along beside them, because the learner has those too, and
+  # cyber-dojo.sh is one of them: a fixture never holds it, since a learner
+  # does not edit it and it is the thing these cases put under test.
+  def fixture_files(fixture_dir)
+    files = scaffolding_files
+    glob = File.join(fixture_dir, '**', '*')
+    Dir.glob(glob, File::FNM_DOTMATCH).select { |path| File.file?(path) }.each do |path|
+      files[path.sub("#{fixture_dir}/", '')] = IO.read(path)
+    end
+    files
+  end
+
+  # - - - - - - - - - - - - - - - - - - -
+
+  # Echoes the shipped files that are not source or test files, such as a
+  # build config or a crib sheet, plus cyber-dojo.sh. A source or test file
+  # is one whose extension the manifest lists, and those belong to the
+  # fixture. cyber-dojo.sh carries one of those extensions in several
+  # languages, so it is named rather than filtered for.
+  def scaffolding_files
+    extensions = manifest['filename_extension']
+    visible_files.reject do |filename,_|
+      filename != 'cyber-dojo.sh' &&
+        extensions.any? { |extension| filename.end_with?(extension) }
+    end
+  end
+
+  # - - - - - - - - - - - - - - - - - - -
 
   def hiker_6x9_substitutions(files, colour)
     if options?
@@ -130,8 +194,13 @@ class Hiker
 end
 
 #- - - - - - - - - - - - - - - - - - - -
+# Use: hiker.rb red|amber|green
+#      hiker.rb --fixture <dir>
 require_relative 'external'
 external = External.new
 hiker = Hiker.new(external)
-colour = ARGV[0]
-hiker.hike(colour)
+if ARGV[0] === '--fixture'
+  hiker.hike_fixture(ARGV[1])
+else
+  hiker.hike(ARGV[0])
+end
