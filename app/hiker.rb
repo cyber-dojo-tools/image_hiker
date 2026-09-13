@@ -109,10 +109,17 @@ class Hiker
     files = scaffolding_files
     glob = File.join(fixture_dir, '**', '*')
     Dir.glob(glob, File::FNM_DOTMATCH).select { |path| File.file?(path) }.each do |path|
-      files[path.sub("#{fixture_dir}/", '')] = IO.read(path)
+      filename = path.sub("#{fixture_dir}/", '')
+      next if filename == EXPECTED_FILENAME
+      files[filename] = IO.read(path)
     end
     files
   end
+
+  # What the case asserts beyond the outcome its dir name declares. It sits
+  # in the dir so that a case is one dir, and it is not a file the learner
+  # would have, so the kata never sees it.
+  EXPECTED_FILENAME = 'expected.json'
 
   # - - - - - - - - - - - - - - - - - - -
 
