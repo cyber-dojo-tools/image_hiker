@@ -29,12 +29,31 @@ class Hiker
   # travels with the case rather than living in a table that can drift.
   def hike_fixture(fixture_dir)
     name = File.basename(fixture_dir)
-    report(fixture_files(fixture_dir), name.split('_').first, {
+    report(fixture_files(fixture_dir), expected_outcome(name), {
       'fixture' => name
     })
   end
 
   private
+
+  # - - - - - - - - - - - - - - - - - - -
+
+  OUTCOMES = %w( timed_out faulty red amber green )
+
+  # Echoes the outcome a fixture dir's name says it should reach.
+  #
+  # The longest match wins, so timed_out is read whole rather than as timed.
+  # A name matching none of them is a typo, and saying so beats running the
+  # case and reporting that it did not reach an outcome nothing can reach.
+  def expected_outcome(name)
+    outcome = OUTCOMES.find { |outcome| name.start_with?("#{outcome}_") }
+    if outcome.nil?
+      STDERR.puts "ERROR: fixture dir '#{name}' does not start with one of"
+      STDERR.puts "       #{OUTCOMES.join(' ')}"
+      exit(42)
+    end
+    outcome
+  end
 
   # - - - - - - - - - - - - - - - - - - -
 
